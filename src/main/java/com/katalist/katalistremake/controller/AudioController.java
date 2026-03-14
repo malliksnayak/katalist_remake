@@ -10,7 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Base64;
 import java.util.Map;
-
+import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Value;
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/audio")
@@ -53,17 +54,24 @@ public class AudioController {
     public String processAudioGeneration(String sceneId, String text, String voice, boolean force) throws Exception {
         // 1. Check if we already have this audio in the database (unless forcing)
         if (!force && sceneId != null && !sceneId.isEmpty()) {
-            log.info("Checking database for existing audio (Scene ID: {})", sceneId);
+            log.info("Checking database for existing audio (Scene ID: {}, Voice: {})", sceneId, voice);
             var existingAudio = audioRepository.findBySceneId(sceneId);
-            if (existingAudio.isPresent() && existingAudio.get().getAudioBase64() != null) {
-                log.info("DATABASE MATCH: Audio found for Scene {}. Skipping generation.", sceneId);
-                return existingAudio.get().getAudioBase64();
+            if (existingAudio.isPresent()) {
+                Audio audio = existingAudio.get();
+                if (audio.getAudioBase64() != null && voice.equals(audio.getVoice())) {
+                    log.info("DATABASE MATCH: Audio found for Scene {} with Voice {}. Skipping generation.", sceneId, voice);
+                    return audio.getAudioBase64();
+                } else if (audio.getAudioBase64() != null) {
+                    log.info("DATABASE VOICE MISMATCH: Scene {} has voice {}, but {} requested. Regenerating.", 
+                        sceneId, audio.getVoice(), voice);
+                }
+            } else {
+                log.info("DATABASE MISS: No audio found for Scene {} in DB.", sceneId);
             }
-            log.info("DATABASE MISS: No audio found for Scene {} in DB.", sceneId);
         }
 
-        // 2. Not found, no sceneId, or forced, so generate new
-        log.info("Generating audio for Scene {}. Force='{}'...", sceneId, force);
+        // 2. Not found, no sceneId, voice mismatch, or forced, so generate new
+        log.info("Generating audio for Scene {}. Voice='{}', Force='{}'...", sceneId, voice, force);
         byte[] audioData = narrationProvider.generateAudio(text, voice);
         String base64Audio = Base64.getEncoder().encodeToString(audioData);
         
@@ -75,11 +83,28 @@ public class AudioController {
                 
                 audio.setAudioBase64(base64Audio);
                 audio.setMimeType("audio/wav");
+                audio.setVoice(voice); // Store the voice used
                 audioRepository.save(audio);
                 log.info("Persisted audio to Database for Scene {}", sceneId);
             });
         }
         
         return base64Audio;
+    }
+
+    @GetMapping("/voices")
+    @SuppressWarnings("unchecked")
+    public ResponseEntity<Map<String, Object>> getVoices(@Value("${kokoro.service.url}") String serviceUrl) {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            // Assuming kokoro service serves voices at /voices (base url minus /audio)
+            String voicesUrl = serviceUrl.replace("/audio", "/voices");
+            Map<String, Object> body = restTemplate.getForObject(voicesUrl, Map.class);
+            return ResponseEntity.ok(body);
+        } catch (Exception e) {
+            log.error("Failed to fetch voices from Kokoro service", e);
+            // Fallback default list
+            return ResponseEntity.ok(Map.of("available_voices", new String[]{"af_bella","af_sarah","am_adam","am_michael"}));
+        }
     }
 }

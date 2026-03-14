@@ -65,6 +65,32 @@ export const generateAudio = async (text: string, voice: string = 'af_bella', sc
   return data.audioBase64;
 };
 
+export const getVoices = async (): Promise<string[]> => {
+  const response = await fetch(`${API_BASE_URL}/audio/voices`);
+  if (!response.ok) {
+    return ["af_bella", "af_nicole", "af_sarah", "am_adam", "am_michael"];
+  }
+  const data = await response.json();
+  return data.available_voices || [];
+};
+
+export const generateImage = async (prompt: string, sceneId?: string): Promise<string> => {
+  const response = await fetch(`${API_BASE_URL}/images`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ prompt, sceneId }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to generate image');
+  }
+
+  const data = await response.json();
+  return data.imageBase64;
+};
+
 export const getProject = async (id: string): Promise<Project> => {
   const response = await fetch(`${API_BASE_URL}/projects/${id}`);
 
@@ -85,8 +111,12 @@ export const getAllProjects = async (): Promise<Project[]> => {
   return response.json();
 };
 
-export const generateAllAudio = async (projectId: string): Promise<Project> => {
-  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/generate-all-audio`, {
+export const generateAllAudio = async (projectId: string, voice?: string): Promise<Project> => {
+  let url = `${API_BASE_URL}/projects/${projectId}/generate-all-assets`;
+  if (voice) {
+    url += `?voice=${encodeURIComponent(voice)}`;
+  }
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -94,7 +124,7 @@ export const generateAllAudio = async (projectId: string): Promise<Project> => {
   });
 
   if (!response.ok) {
-    throw new Error('Failed to generate all audio');
+    throw new Error('Failed to generate all audio/assets');
   }
 
   return response.json();
@@ -108,4 +138,28 @@ export const deleteProject = async (id: string): Promise<void> => {
   if (!response.ok) {
     throw new Error('Failed to delete project');
   }
+};
+
+export const getVideoDownloadUrl = (projectId: string): string => {
+  return `${API_BASE_URL}/video/download/${projectId}`;
+};
+
+export const downloadVideo = async (projectId: string, filename: string = 'video.mp4') => {
+  const url = getVideoDownloadUrl(projectId);
+  const response = await fetch(url);
+  
+  if (!response.ok) {
+    throw new Error('Failed to download video');
+  }
+  
+  const blob = await response.blob();
+  const downloadUrl = window.URL.createObjectURL(blob);
+  
+  const a = document.createElement('a');
+  a.href = downloadUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(downloadUrl);
 };

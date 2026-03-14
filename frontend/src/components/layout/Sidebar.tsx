@@ -52,38 +52,53 @@ export function Sidebar() {
         </Button>
       </div>
 
-      <nav className="flex-1 px-4 py-4 space-y-4 flex flex-col overflow-hidden">
+      <nav className="flex-1 px-4 py-4 space-y-8 flex flex-col overflow-hidden">
         <div>
-          <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Saved Projects</p>
-          <ScrollArea className="flex-1 h-[400px]">
-            <div className="space-y-1 block">
-              {isLoading ? (
-                <div className="px-3 py-2 text-sm text-muted-foreground">Loading...</div>
-              ) : projects.length === 0 ? (
-                <div className="px-3 py-2 text-sm text-muted-foreground">No projects yet.</div>
-              ) : (
-                projects.map((p) => (
-                  <div 
-                    key={p.id} 
-                    onClick={() => router.push(`/?id=${p.id}`)}
-                    className="flex justify-between items-center group px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-foreground font-medium transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center space-x-3 overflow-hidden">
-                      <Video className="w-4 h-4 shrink-0" />
-                      <span className="truncate">{p.title || 'Untitled Project'}</span>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 opacity-0 group-hover:opacity-100 hover:bg-destructive hover:text-destructive-foreground transition-all shrink-0"
-                      onClick={(e) => handleDelete(e, p.id)}
-                      disabled={deleteMutation.isPending}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
+          <p className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4 opacity-50">Recent Activity</p>
+          <div className="space-y-1">
+            {isLoading ? (
+               <div className="px-3 py-2 text-xs text-muted-foreground animate-pulse">Scanning database...</div>
+            ) : projects.length === 0 ? (
+               <div className="px-3 py-2 text-xs text-muted-foreground italic">No projects found.</div>
+            ) : (
+              projects.slice(0, 3).map((p) => (
+                <div 
+                  key={p.id} 
+                  onClick={() => router.push(`/?id=${p.id}`)}
+                  className="flex justify-between items-center group px-3 py-2 rounded-xl text-sm text-muted-foreground hover:bg-primary/5 hover:text-primary font-bold transition-all cursor-pointer"
+                >
+                  <div className="flex items-center space-x-3 overflow-hidden">
+                    <Video className="w-3.5 h-3.5 shrink-0" />
+                    <span className="truncate">{p.title || 'Untitled'}</span>
                   </div>
-                ))
-              )}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        <div className="flex-1 flex flex-col min-h-0">
+          <p className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4 opacity-50">All Projects</p>
+          <ScrollArea className="flex-1">
+            <div className="space-y-1 block pr-4">
+              {projects.map((p) => (
+                <div 
+                  key={p.id} 
+                  onClick={() => router.push(`/?id=${p.id}`)}
+                  className="flex justify-between items-center group px-3 py-1.5 rounded-lg text-xs text-muted-foreground/80 hover:bg-muted/50 hover:text-foreground font-medium transition-colors cursor-pointer"
+                >
+                  <span className="truncate">{p.title || 'Untitled Project'}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive transition-all shrink-0"
+                    onClick={(e) => handleDelete(e, p.id)}
+                    disabled={deleteMutation.isPending}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+              ))}
             </div>
           </ScrollArea>
         </div>

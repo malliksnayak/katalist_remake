@@ -58,6 +58,13 @@
 			<artifactId>spring-dotenv</artifactId>
 			<version>4.0.0</version>
 		</dependency>
+
+		<!-- JavaCV for Video Processing (includes FFmpeg binaries) -->
+		<dependency>
+			<groupId>org.bytedeco</groupId>
+			<artifactId>javacv-platform</artifactId>
+			<version>1.5.10</version>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>

@@ -6,5 +6,6 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
 
     <include file="db/changelog/changesets/01-initial-schema.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changesets/02-add-voice-to-audio.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>

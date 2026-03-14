@@ -8,14 +8,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
-import { Wand2, Image as ImageIcon, AlignLeft } from "lucide-react";
+import { Wand2, Image as ImageIcon, AlignLeft, Plus, Loader2 } from "lucide-react";
 import { SceneCard } from "@/components/SceneCard";
 import { TopBar } from "@/components/layout/TopBar";
-import { generateStoryboard, generateAllAudio, getProject, Project, Scene } from "@/lib/api";
+import { generateStoryboard, generateAllAudio, getProject, Project, Scene, downloadVideo } from "@/lib/api";
+import { useQueryClient } from "@tanstack/react-query";
 
 function StoryboardContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const projectId = searchParams.get('id');
 
   const [storyInput, setStoryInput] = useState("");
@@ -56,14 +58,25 @@ function StoryboardContent() {
   });
 
   const batchAudioMutation = useMutation({
-    mutationFn: (projectId: string) => generateAllAudio(projectId),
-    onSuccess: (updatedProject) => {
-      setProject(updatedProject);
-      alert("All audio generated successfully and stored as Base64 in Database!");
+    mutationFn: (id: string) => generateAllAudio(id),
+    onSuccess: () => {
+      // Invalidate and refetch to ensure we have the LATEST data from DB with all relations
+      queryClient.invalidateQueries({ queryKey: ['project', projectId] });
+      // We don't necessarily need an alert if the UI updates smoothly
     },
     onError: (error) => {
-      console.error("Batch audio generation failed", error);
-      alert("Failed to generate all audio.");
+      console.error("Batch asset generation failed", error);
+      alert("Failed to generate all assets. Check server logs.");
+    }
+  });
+
+  const downloadVideoMutation = useMutation({
+    mutationFn: async (projectId: string) => {
+      await downloadVideo(projectId, `${project?.title || 'video'}.mp4`);
+    },
+    onError: (error) => {
+      console.error("Video download failed", error);
+      alert("Failed to initiate video download.");
     }
   });
 
@@ -78,6 +91,12 @@ function StoryboardContent() {
     }
   };
 
+  const handleDownloadVideo = () => {
+    if (project?.id) {
+      downloadVideoMutation.mutate(project.id);
+    }
+  };
+
   const projectTitle = project?.title || "New Project";
   const sortedScenes = [...(project?.scenes || [])].sort((a, b) => a.sceneOrder - b.sceneOrder);
 
@@ -86,7 +105,9 @@ function StoryboardContent() {
       <TopBar 
         title={projectTitle} 
         onGenerateAll={handleGenerateAll}
+        onDownloadVideo={handleDownloadVideo}
         isGenerating={batchAudioMutation.isPending}
+        isDownloading={downloadVideoMutation.isPending}
       />
       
       <div className="flex-1 flex overflow-hidden isolate">
@@ -172,7 +193,20 @@ function StoryboardContent() {
                       <SceneCard scene={scene} />
                     </div>
                   ))}
+                  
+                  {/* Bottom Pad */}
+                  <div className="h-32" />
                 </>
+              ) : !projectId ? (
+                <div className="flex flex-col items-center justify-center h-full min-h-[500px] text-center p-8">
+                  <div className="h-20 w-20 rounded-3xl bg-primary/10 rotate-12 flex items-center justify-center mb-8 ring-1 ring-primary/20 shadow-xl shadow-primary/5">
+                    <Plus className="h-10 w-10 text-primary animate-pulse" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-foreground mb-3 tracking-tight outline-none italic">Welcome to Katalist</h3>
+                  <p className="max-w-md text-muted-foreground text-sm font-medium leading-relaxed mb-8">
+                    To begin, enter your manuscript or script in the workspace on the left and click <span className="text-primary font-bold italic">Generate Storyboard</span>.
+                  </p>
+                </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-muted-foreground opacity-70 animate-in fade-in duration-1000">
                   <div className="h-24 w-24 rounded-full bg-primary/5 flex items-center justify-center mb-6 ring-1 ring-primary/10 shadow-inner">

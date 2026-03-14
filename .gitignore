@@ -7,3 +7,9 @@ target/
 .vscode/
 bin/
 .env
+
+# Frontend build artifacts
+frontend/node/
+frontend/node_modules/
+frontend/.next/
+frontend/out/

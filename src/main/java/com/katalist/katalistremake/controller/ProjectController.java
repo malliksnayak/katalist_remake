@@ -20,12 +20,17 @@ public class ProjectController {
     private final ScriptService scriptService;
     private final ProjectRepository projectRepository;
     private final AudioController audioController;
+    private final ImageController imageController;
 
-    public ProjectController(ScriptService scriptService, ProjectRepository projectRepository, AudioController audioController) {
+    public ProjectController(ScriptService scriptService, 
+                             ProjectRepository projectRepository, 
+                             AudioController audioController,
+                             ImageController imageController) {
         this.scriptService = scriptService;
         this.projectRepository = projectRepository;
         this.audioController = audioController;
-        log.info("ProjectController registered – endpoints for projects are LIVE.");
+        this.imageController = imageController;
+        log.info("ProjectController registered – endpoints for projects and assets are LIVE.");
     }
 
     @PostMapping(value = "/generate", produces = "application/json")
@@ -71,22 +76,37 @@ public class ProjectController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping("/{id}/generate-all-audio")
-    public ResponseEntity<Project> generateAllAudio(@PathVariable String id) {
-        log.info("=== [BATCH REQUEST] Generating all audio for project {} ===", id);
+    @PostMapping("/{id}/generate-all-assets")
+    public ResponseEntity<Project> generateAllAssets(@PathVariable String id, @RequestParam(defaultValue = "af_bella") String voice) {
+        log.info("=== [BATCH REQUEST] Generating ALL assets (Audio & Images) for project {} with voice {} ===", id, voice);
         return projectRepository.findById(id).map(project -> {
             for (Scene scene : project.getScenes()) {
+                // Audio
                 if (scene.getAudioScript() != null && !scene.getAudioScript().isBlank()) {
                     try {
-                        audioController.processAudioGeneration(scene.getId(), scene.getAudioScript(), "af_bella", false);
+                        audioController.processAudioGeneration(scene.getId(), scene.getAudioScript(), voice, false);
                     } catch (Exception e) {
                         log.error("Failed to generate audio for scene {}", scene.getId(), e);
+                    }
+                }
+                // Image
+                if (scene.getImagePrompt() != null && !scene.getImagePrompt().isBlank()) {
+                    try {
+                        imageController.processImageGeneration(scene.getId(), scene.getImagePrompt(), false);
+                    } catch (Exception e) {
+                        log.error("Failed to generate image for scene {}", scene.getId(), e);
                     }
                 }
             }
             // Refresh and return
             return ResponseEntity.ok(projectRepository.findById(id).get());
         }).orElse(ResponseEntity.notFound().build());
+    }
+
+    // Keep for backward compatibility if needed, but redirects to generateAllAssets
+    @PostMapping("/{id}/generate-all-audio")
+    public ResponseEntity<Project> generateAllAudio(@PathVariable String id, @RequestParam(defaultValue = "af_bella") String voice) {
+        return generateAllAssets(id, voice);
     }
 
     @DeleteMapping("/{id}")

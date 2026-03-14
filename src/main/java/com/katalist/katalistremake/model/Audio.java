@@ -27,4 +27,6 @@ public class Audio {
     private String audioBase64;
     
     private String mimeType;
+    
+    private String voice;
 }

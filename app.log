@@ -7,53 +7,42 @@
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::                (v3.2.3)
 
-01:10:32.152 INFO  [           main] c.k.k.KatalistRemakeApplication          : Starting KatalistRemakeApplication v0.0.1-SNAPSHOT using Java 17.0.13 with PID 30116 (/Users/malliknayak/WS/katalist_remake/target/katalist-remake-0.0.1-SNAPSHOT.jar started by malliknayak in /Users/malliknayak/WS/katalist_remake)
-01:10:32.154 DEBUG [           main] c.k.k.KatalistRemakeApplication          : Running with Spring Boot v3.2.3, Spring v6.1.4
-01:10:32.154 INFO  [           main] c.k.k.KatalistRemakeApplication          : No active profile set, falling back to 1 default profile: "default"
-01:10:32.747 INFO  [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-01:10:32.864 INFO  [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 112 ms. Found 4 JPA repository interfaces.
-01:10:33.150 INFO  [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
-01:10:33.155 INFO  [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-01:10:33.155 INFO  [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.19]
-01:10:33.171 INFO  [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-01:10:33.171 INFO  [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 852 ms
-01:10:33.240 INFO  [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-01:10:33.311 INFO  [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@382d71c7
-01:10:33.312 INFO  [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-01:10:33.412 INFO  [           main] liquibase.database                       : Set default schema name to public
-01:10:33.692 INFO  [           main] liquibase.changelog                      : Reading from public.databasechangelog
-01:10:33.732 INFO  [           main] liquibase.lockservice                    : Successfully acquired change log lock
-01:10:33.733 INFO  [           main] liquibase.command                        : Using deploymentId: 3517233733
-01:10:33.734 INFO  [           main] liquibase.changelog                      : Reading from public.databasechangelog
-Running Changeset: db/changelog/changesets/01-initial-schema.xml::3::antigravity
-01:10:33.751 INFO  [           main] liquibase.changelog                      : Marking ChangeSet: "db/changelog/changesets/01-initial-schema.xml::3::antigravity" as ran despite precondition failure due to onFail='MARK_RAN': 
-          db/changelog/db.changelog-master.xml : Not precondition failed
-
-Running Changeset: db/changelog/changesets/01-initial-schema.xml::4::antigravity
-01:10:33.757 INFO  [           main] liquibase.changelog                      : Marking ChangeSet: "db/changelog/changesets/01-initial-schema.xml::4::antigravity" as ran despite precondition failure due to onFail='MARK_RAN': 
-          db/changelog/db.changelog-master.xml : Not precondition failed
-
-01:10:33.760 INFO  [           main] liquibase.util                           : UPDATE SUMMARY
-01:10:33.760 INFO  [           main] liquibase.util                           : Run:                          2
-01:10:33.760 INFO  [           main] liquibase.util                           : Previously run:               2
-01:10:33.760 INFO  [           main] liquibase.util                           : Filtered out:                 0
-01:10:33.760 INFO  [           main] liquibase.util                           : -------------------------------
-01:10:33.760 INFO  [           main] liquibase.util                           : Total change sets:            4
-01:10:33.761 INFO  [           main] liquibase.util                           : Update summary generated
-01:10:33.761 INFO  [           main] liquibase.command                        : Update command completed successfully.
-Liquibase: Update has been successful. Rows affected: 2
-01:10:33.763 INFO  [           main] liquibase.lockservice                    : Successfully released change log lock
-01:10:33.763 INFO  [           main] liquibase.command                        : Command execution complete
-01:10:33.804 INFO  [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-01:10:33.841 INFO  [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.4.4.Final
-01:10:33.862 INFO  [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
-01:10:33.996 INFO  [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-01:10:34.026 WARN  [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-01:10:34.608 INFO  [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-01:10:34.632 INFO  [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-01:10:34.645 INFO  [           main] c.k.k.s.n.KokoroNarrationService         : Started KokoroNarrationService with URL: http://localhost:8000/audio
-01:10:35.065 INFO  [           main] c.k.k.service.ScriptService              : Prompt template loaded from 'classpath:prompts/storyboard.txt' (1637 chars).
-01:10:35.065 DEBUG [           main] c.k.k.service.ScriptService              : Prompt template content:
+03:38:36.052 INFO  [           main] c.k.k.KatalistRemakeApplication          : Starting KatalistRemakeApplication v0.0.1-SNAPSHOT using Java 17.0.13 with PID 54602 (/Users/malliknayak/WS/katalist_remake/target/katalist-remake-0.0.1-SNAPSHOT.jar started by malliknayak in /Users/malliknayak/WS/katalist_remake)
+03:38:36.054 DEBUG [           main] c.k.k.KatalistRemakeApplication          : Running with Spring Boot v3.2.3, Spring v6.1.4
+03:38:36.055 INFO  [           main] c.k.k.KatalistRemakeApplication          : No active profile set, falling back to 1 default profile: "default"
+03:38:36.717 INFO  [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+03:38:36.799 INFO  [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 77 ms. Found 4 JPA repository interfaces.
+03:38:37.197 INFO  [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+03:38:37.212 INFO  [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+03:38:37.212 INFO  [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.19]
+03:38:37.253 INFO  [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+03:38:37.254 INFO  [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 971 ms
+03:38:37.412 INFO  [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+03:38:37.594 INFO  [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@1c3b6963
+03:38:37.595 INFO  [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+03:38:37.738 INFO  [           main] liquibase.database                       : Set default schema name to public
+03:38:38.118 INFO  [           main] liquibase.changelog                      : Reading from public.databasechangelog
+Database is up to date, no changesets to execute
+03:38:38.153 INFO  [           main] liquibase.changelog                      : Reading from public.databasechangelog
+03:38:38.163 INFO  [           main] liquibase.util                           : UPDATE SUMMARY
+03:38:38.163 INFO  [           main] liquibase.util                           : Run:                          0
+03:38:38.163 INFO  [           main] liquibase.util                           : Previously run:               5
+03:38:38.163 INFO  [           main] liquibase.util                           : Filtered out:                 0
+03:38:38.163 INFO  [           main] liquibase.util                           : -------------------------------
+03:38:38.163 INFO  [           main] liquibase.util                           : Total change sets:            5
+03:38:38.163 INFO  [           main] liquibase.util                           : Update summary generated
+03:38:38.182 INFO  [           main] liquibase.lockservice                    : Successfully released change log lock
+03:38:38.183 INFO  [           main] liquibase.command                        : Command execution complete
+03:38:38.268 INFO  [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+03:38:38.416 INFO  [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.4.4.Final
+03:38:38.469 INFO  [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+03:38:38.651 INFO  [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+03:38:38.714 WARN  [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+03:38:39.450 INFO  [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+03:38:39.474 INFO  [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+03:38:39.994 INFO  [           main] c.k.k.s.n.KokoroNarrationService         : Started KokoroNarrationService with URL: http://localhost:8000/audio
+03:38:40.149 INFO  [           main] c.k.k.service.ScriptService              : Prompt template loaded from 'classpath:prompts/storyboard.txt' (1637 chars).
+03:38:40.149 DEBUG [           main] c.k.k.service.ScriptService              : Prompt template content:
 You are a professional video storyboard artist.
 Convert the following story into a JSON storyboard.
 
@@ -87,9 +76,81 @@ REQUIRED JSON STRUCTURE:
   ]
 }
 
-01:10:35.066 INFO  [           main] c.k.k.controller.ProjectController       : ProjectController registered – endpoints for projects are LIVE.
-01:10:35.067 INFO  [           main] c.k.k.s.narration.NarrationOrchestrator  : NarrationOrchestrator online. Provider active: kokoro
-01:10:35.082 WARN  [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-01:10:35.093 INFO  [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
-01:10:35.267 INFO  [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
-01:10:35.277 INFO  [           main] c.k.k.KatalistRemakeApplication          : Started KatalistRemakeApplication in 3.341 seconds (process running for 3.63)
+03:38:40.150 INFO  [           main] c.k.k.controller.ProjectController       : ProjectController registered – endpoints for projects and assets are LIVE.
+03:38:40.153 INFO  [           main] c.k.k.s.narration.NarrationOrchestrator  : NarrationOrchestrator online. Provider active: kokoro
+03:38:40.170 WARN  [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+03:38:40.182 INFO  [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+03:38:40.350 INFO  [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
+03:38:40.359 INFO  [           main] c.k.k.KatalistRemakeApplication          : Started KatalistRemakeApplication in 4.6 seconds (process running for 5.159)
+03:38:42.661 INFO  [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+03:38:42.661 INFO  [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+03:38:42.662 INFO  [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+03:38:54.534 INFO  [nio-8080-exec-1] c.k.k.controller.ProjectController       : Fetching Project cb455be4-02d3-4113-8986-19dc44a3231d: Found 5/5 scenes with audio.
+03:39:01.267 INFO  [nio-8080-exec-4] c.k.k.controller.ProjectController       : Fetching Project cb455be4-02d3-4113-8986-19dc44a3231d: Found 5/5 scenes with audio.
+03:39:05.440 INFO  [io-8080-exec-10] c.k.k.controller.ProjectController       : === [BATCH REQUEST] Generating ALL assets (Audio & Images) for project cb455be4-02d3-4113-8986-19dc44a3231d with voice am_michael ===
+03:39:05.470 INFO  [io-8080-exec-10] c.k.k.controller.AudioController         : Checking database for existing audio (Scene ID: d9740f9c-1357-4584-a2eb-f6f7ee31d9ed, Voice: am_michael)
+03:39:05.493 INFO  [io-8080-exec-10] c.k.k.controller.AudioController         : DATABASE VOICE MISMATCH: Scene d9740f9c-1357-4584-a2eb-f6f7ee31d9ed has voice af_bella, but am_michael requested. Regenerating.
+03:39:05.493 INFO  [io-8080-exec-10] c.k.k.controller.AudioController         : Generating audio for Scene d9740f9c-1357-4584-a2eb-f6f7ee31d9ed. Voice='am_michael', Force='false'...
+03:39:05.493 DEBUG [io-8080-exec-10] c.k.k.s.n.KokoroNarrationService         : Generating audio via Kokoro for text: 'The howling wind of the central Asian steppe carri...' using voice: am_michael
+03:39:10.813 INFO  [io-8080-exec-10] c.k.k.controller.AudioController         : Persisted audio to Database for Scene d9740f9c-1357-4584-a2eb-f6f7ee31d9ed
+03:39:10.813 INFO  [io-8080-exec-10] c.k.k.controller.ImageController         : Checking database for existing image (Scene ID: d9740f9c-1357-4584-a2eb-f6f7ee31d9ed)
+03:39:10.815 INFO  [io-8080-exec-10] c.k.k.controller.ImageController         : DATABASE MATCH: Image found for Scene d9740f9c-1357-4584-a2eb-f6f7ee31d9ed. Skipping generation.
+03:39:10.815 INFO  [io-8080-exec-10] c.k.k.controller.AudioController         : Checking database for existing audio (Scene ID: 3c83e6e4-5efd-4ef6-be8b-09fb48420a42, Voice: am_michael)
+03:39:10.817 INFO  [io-8080-exec-10] c.k.k.controller.AudioController         : DATABASE VOICE MISMATCH: Scene 3c83e6e4-5efd-4ef6-be8b-09fb48420a42 has voice af_bella, but am_michael requested. Regenerating.
+03:39:10.817 INFO  [io-8080-exec-10] c.k.k.controller.AudioController         : Generating audio for Scene 3c83e6e4-5efd-4ef6-be8b-09fb48420a42. Voice='am_michael', Force='false'...
+03:39:10.817 DEBUG [io-8080-exec-10] c.k.k.s.n.KokoroNarrationService         : Generating audio via Kokoro for text: 'A captive princess from a fallen kingdom is brough...' using voice: am_michael
+03:39:16.062 INFO  [io-8080-exec-10] c.k.k.controller.AudioController         : Persisted audio to Database for Scene 3c83e6e4-5efd-4ef6-be8b-09fb48420a42
+03:39:16.064 INFO  [io-8080-exec-10] c.k.k.controller.ImageController         : Checking database for existing image (Scene ID: 3c83e6e4-5efd-4ef6-be8b-09fb48420a42)
+03:39:16.068 INFO  [io-8080-exec-10] c.k.k.controller.ImageController         : DATABASE MATCH: Image found for Scene 3c83e6e4-5efd-4ef6-be8b-09fb48420a42. Skipping generation.
+03:39:16.069 INFO  [io-8080-exec-10] c.k.k.controller.AudioController         : Checking database for existing audio (Scene ID: 419a863c-df27-493c-9b4a-1de45a35f142, Voice: am_michael)
+03:39:16.072 INFO  [io-8080-exec-10] c.k.k.controller.AudioController         : DATABASE VOICE MISMATCH: Scene 419a863c-df27-493c-9b4a-1de45a35f142 has voice af_bella, but am_michael requested. Regenerating.
+03:39:16.073 INFO  [io-8080-exec-10] c.k.k.controller.AudioController         : Generating audio for Scene 419a863c-df27-493c-9b4a-1de45a35f142. Voice='am_michael', Force='false'...
+03:39:16.073 DEBUG [io-8080-exec-10] c.k.k.s.n.KokoroNarrationService         : Generating audio via Kokoro for text: 'The tension reaches a breaking point when the woma...' using voice: am_michael
+03:39:22.133 INFO  [io-8080-exec-10] c.k.k.controller.AudioController         : Persisted audio to Database for Scene 419a863c-df27-493c-9b4a-1de45a35f142
+03:39:22.133 INFO  [io-8080-exec-10] c.k.k.controller.ImageController         : Checking database for existing image (Scene ID: 419a863c-df27-493c-9b4a-1de45a35f142)
+03:39:22.136 INFO  [io-8080-exec-10] c.k.k.controller.ImageController         : DATABASE MATCH: Image found for Scene 419a863c-df27-493c-9b4a-1de45a35f142. Skipping generation.
+03:39:22.137 INFO  [io-8080-exec-10] c.k.k.controller.AudioController         : Checking database for existing audio (Scene ID: 2a7f9ef9-cfa8-4879-914a-8df72dce52f2, Voice: am_michael)
+03:39:22.140 INFO  [io-8080-exec-10] c.k.k.controller.AudioController         : DATABASE VOICE MISMATCH: Scene 2a7f9ef9-cfa8-4879-914a-8df72dce52f2 has voice af_bella, but am_michael requested. Regenerating.
+03:39:22.140 INFO  [io-8080-exec-10] c.k.k.controller.AudioController         : Generating audio for Scene 2a7f9ef9-cfa8-4879-914a-8df72dce52f2. Voice='am_michael', Force='false'...
+03:39:22.140 DEBUG [io-8080-exec-10] c.k.k.s.n.KokoroNarrationService         : Generating audio via Kokoro for text: 'A sudden realization washes over the scholar recor...' using voice: am_michael
+03:39:27.512 INFO  [io-8080-exec-10] c.k.k.controller.AudioController         : Persisted audio to Database for Scene 2a7f9ef9-cfa8-4879-914a-8df72dce52f2
+03:39:27.512 INFO  [io-8080-exec-10] c.k.k.controller.ImageController         : Checking database for existing image (Scene ID: 2a7f9ef9-cfa8-4879-914a-8df72dce52f2)
+03:39:27.516 INFO  [io-8080-exec-10] c.k.k.controller.ImageController         : DATABASE MATCH: Image found for Scene 2a7f9ef9-cfa8-4879-914a-8df72dce52f2. Skipping generation.
+03:39:27.516 INFO  [io-8080-exec-10] c.k.k.controller.AudioController         : Checking database for existing audio (Scene ID: a4b4b7d5-c1bc-4691-b80c-fbc87856269c, Voice: am_michael)
+03:39:27.520 INFO  [io-8080-exec-10] c.k.k.controller.AudioController         : DATABASE VOICE MISMATCH: Scene a4b4b7d5-c1bc-4691-b80c-fbc87856269c has voice af_bella, but am_michael requested. Regenerating.
+03:39:27.521 INFO  [io-8080-exec-10] c.k.k.controller.AudioController         : Generating audio for Scene a4b4b7d5-c1bc-4691-b80c-fbc87856269c. Voice='am_michael', Force='false'...
+03:39:27.521 DEBUG [io-8080-exec-10] c.k.k.s.n.KokoroNarrationService         : Generating audio via Kokoro for text: 'The sun rises over a quiet empire where the dust o...' using voice: am_michael
+03:39:32.811 INFO  [io-8080-exec-10] c.k.k.controller.AudioController         : Persisted audio to Database for Scene a4b4b7d5-c1bc-4691-b80c-fbc87856269c
+03:39:32.812 INFO  [io-8080-exec-10] c.k.k.controller.ImageController         : Checking database for existing image (Scene ID: a4b4b7d5-c1bc-4691-b80c-fbc87856269c)
+03:39:32.816 INFO  [io-8080-exec-10] c.k.k.controller.ImageController         : DATABASE MATCH: Image found for Scene a4b4b7d5-c1bc-4691-b80c-fbc87856269c. Skipping generation.
+03:39:32.891 INFO  [nio-8080-exec-1] c.k.k.controller.ProjectController       : Fetching Project cb455be4-02d3-4113-8986-19dc44a3231d: Found 5/5 scenes with audio.
+03:39:42.400 INFO  [nio-8080-exec-7] c.k.k.controller.ProjectController       : Fetching Project cb455be4-02d3-4113-8986-19dc44a3231d: Found 5/5 scenes with audio.
+03:39:43.290 INFO  [nio-8080-exec-9] c.k.k.controller.VideoController         : Request to download video for project: cb455be4-02d3-4113-8986-19dc44a3231d
+[libopenh264 @ 0x136cb9240] [OpenH264] this = 0x0x135fc6e20, Warning:layerId(0) doesn't support profile(578), change to UNSPECIFIC profile
+[libopenh264 @ 0x136cb9240] [OpenH264] this = 0x0x135fc6e20, Warning:bEnableFrameSkip = 0,bitrate can't be controlled for RC_QUALITY_MODE,RC_BITRATE_MODE and RC_TIMESTAMP_MODE without enabling skip frame.
+Output #0, mp4, to '/Users/malliknayak/WS/katalist_remake/./storage/video_cb455be4-02d3-4113-8986-19dc44a3231d15656804768613826031/final_video.mp4':
+  Metadata:
+    encoder         : Lavf60.16.100
+  Stream #0:0: Video: h264 (Constrained Baseline) (avc1 / 0x31637661), yuv420p, 1024x576, q=2-31, 2000 kb/s, 30 fps, 15360 tbn
+    Side data:
+      cpb: bitrate max/min/avg: 2000000/0/2000000 buffer size: 0 vbv_delay: N/A
+  Stream #0:1: Audio: aac (LC) (mp4a / 0x6134706D), 44100 Hz, stereo, fltp, 128 kb/s
+Input #0, wav, from '/Users/malliknayak/WS/katalist_remake/./storage/video_cb455be4-02d3-4113-8986-19dc44a3231d15656804768613826031/scene_audio2561800712371560714.wav':
+  Duration: 00:00:20.48, bitrate: 384 kb/s
+  Stream #0:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 24000 Hz, 1 channels, s16, 384 kb/s
+Input #0, wav, from '/Users/malliknayak/WS/katalist_remake/./storage/video_cb455be4-02d3-4113-8986-19dc44a3231d15656804768613826031/scene_audio5276415732640467947.wav':
+  Duration: 00:00:19.29, bitrate: 384 kb/s
+  Stream #0:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 24000 Hz, 1 channels, s16, 384 kb/s
+Input #0, wav, from '/Users/malliknayak/WS/katalist_remake/./storage/video_cb455be4-02d3-4113-8986-19dc44a3231d15656804768613826031/scene_audio13111860114135665038.wav':
+  Duration: 00:00:21.35, bitrate: 384 kb/s
+  Stream #0:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 24000 Hz, 1 channels, s16, 384 kb/s
+Input #0, wav, from '/Users/malliknayak/WS/katalist_remake/./storage/video_cb455be4-02d3-4113-8986-19dc44a3231d15656804768613826031/scene_audio9296815639618070374.wav':
+  Duration: 00:00:20.27, bitrate: 384 kb/s
+  Stream #0:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 24000 Hz, 1 channels, s16, 384 kb/s
+Input #0, wav, from '/Users/malliknayak/WS/katalist_remake/./storage/video_cb455be4-02d3-4113-8986-19dc44a3231d15656804768613826031/scene_audio7066376957205862013.wav':
+  Duration: 00:00:19.86, bitrate: 384 kb/s
+  Stream #0:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 24000 Hz, 1 channels, s16, 384 kb/s
+[aac @ 0x135fc5840] Qavg: 3818.734
+[aac @ 0x135fc5840] 1 frames left in the queue on closing
+03:39:49.556 INFO  [         task-1] c.k.k.controller.VideoController         : Video stream completed for project: cb455be4-02d3-4113-8986-19dc44a3231d
+03:39:49.557 INFO  [         task-1] c.k.katalistremake.service.VideoService  : Cleaned up temporary video directory: ./storage/video_cb455be4-02d3-4113-8986-19dc44a3231d15656804768613826031
