@@ -1,0 +1,9 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+/src/main/resources/application-local.properties
+.DS_Store
+.idea/
+*.iml
+.vscode/
+bin/
+.env

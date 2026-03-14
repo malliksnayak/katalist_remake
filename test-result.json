@@ -1,0 +1,28 @@
+{
+  "title" : "Roanoke: The Lost Colony",
+  "scenes" : [ {
+    "sceneOrder" : 1,
+    "visualDescription" : "Wide shot of a small English ship, the 'Roanoke', approaching the coast of North Carolina in 1587. The sky is partly cloudy, and the land is a dense forest. Settlers can be seen on the deck, looking towards the shore with anticipation and apprehension.",
+    "audioScript" : "History Mystery: The Roanoke Colony.",
+    "durationSeconds" : 3,
+    "imagePrompt" : "English ship approaching North Carolina coast, 1587, dense forest, cloudy sky, settlers on deck, painting style"
+  }, {
+    "sceneOrder" : 2,
+    "visualDescription" : "A bustling scene of English settlers building a small village on Roanoke Island in 1587. They are constructing wooden houses, planting crops, and interacting with the local Native Americans (peaceful interaction). The sun is shining.",
+    "audioScript" : "In 1587, settlers arrived.",
+    "durationSeconds" : 4,
+    "imagePrompt" : "Roanoke Island, 1587, English settlers building village, wooden houses, crops, friendly interaction with Native Americans, sunny day, illustration"
+  }, {
+    "sceneOrder" : 3,
+    "visualDescription" : "An empty, overgrown village on Roanoke Island. The houses are dilapidated, and the crops have withered. The scene is shrouded in mist and fog. The atmosphere is eerie and unsettling. A single crow sits atop a broken fence post.",
+    "audioScript" : "In 1590, they were gone.",
+    "durationSeconds" : 4,
+    "imagePrompt" : "Abandoned Roanoke village, 1590, overgrown, dilapidated houses, withered crops, mist, eerie atmosphere, crow on fencepost, dark painting"
+  }, {
+    "sceneOrder" : 4,
+    "visualDescription" : "Close-up of a weathered wooden post with the word 'CROATOAN' carved into it. The carving is old and worn, but still legible. The background is blurred, showing the dense forest surrounding the post.",
+    "audioScript" : "Only 'Croatoan' remained.",
+    "durationSeconds" : 5,
+    "imagePrompt" : "Weathered wooden post, carved with 'CROATOAN', close-up, blurry forest background, mysterious, aged wood texture"
+  } ]
+}
