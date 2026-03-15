@@ -31,6 +31,7 @@ public class ImageController {
     public ResponseEntity<Map<String, String>> generateImage(@RequestBody Map<String, Object> request) {
         String prompt = (String) request.get("prompt");
         String sceneId = (String) request.get("sceneId");
+        String model = (String) request.get("model");
         boolean force = request.get("force") != null && (boolean) request.get("force");
 
         if (prompt == null || prompt.isBlank()) {
@@ -38,7 +39,7 @@ public class ImageController {
         }
 
         try {
-            String base64Image = processImageGeneration(sceneId, prompt, force);
+            String base64Image = processImageGeneration(sceneId, prompt, model, force);
             return ResponseEntity.ok(Map.of("imageBase64", base64Image));
         } catch (Exception e) {
             log.error("Failed to generate image", e);
@@ -46,10 +47,10 @@ public class ImageController {
         }
     }
 
-    public String processImageGeneration(String sceneId, String prompt, boolean force) throws Exception {
+    public String processImageGeneration(String sceneId, String prompt, String model, boolean force) throws Exception {
         // 1. Check if we already have this image in the database (unless forcing)
         if (!force && sceneId != null && !sceneId.isEmpty()) {
-            log.info("Checking database for existing image (Scene ID: {})", sceneId);
+            log.info("Checking database for existing image (Scene ID: {}, Model: {})", sceneId, model);
             var existingImage = imageRepository.findBySceneId(sceneId);
             if (existingImage.isPresent() && existingImage.get().getImageBase64() != null) {
                 log.info("DATABASE MATCH: Image found for Scene {}. Skipping generation.", sceneId);
@@ -59,8 +60,8 @@ public class ImageController {
         }
 
         // 2. Not found, no sceneId, or forced, so generate new
-        log.info("Generating image for Scene {}. Force='{}'...", sceneId, force);
-        String base64Image = visualProvider.generateImage(prompt);
+        log.info("Generating image for Scene {}. Model='{}', Force='{}'...", sceneId, model, force);
+        String base64Image = visualProvider.generateImage(prompt, model);
 
         // 3. Save/Update to DB if sceneId is present
         if (sceneId != null && !sceneId.isEmpty()) {

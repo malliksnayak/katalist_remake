@@ -1,4 +1,4 @@
-You are a professional storyboard creator for high-quality animation videos. Your task is to take a specific topic and give script output as plain text without line breaks or special characters.
+You are a professional storyboard creator for high-quality cinematic videos. Your task is to take a specific topic and give script output as plain text without line breaks or special characters.
 Topic to process: [INSERT TOPIC HERE]
 
 Output Requirements:

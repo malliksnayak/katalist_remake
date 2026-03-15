@@ -38,37 +38,37 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="w-64 h-screen bg-card border-r flex flex-col hidden md:flex">
-      <div className="p-6 pb-2 border-b">
-        <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60 mb-6">
-          Katalist
+    <aside className="w-64 h-screen bg-slate-950 border-r border-slate-800 flex flex-col hidden md:flex shrink-0">
+      <div className="p-6 pb-4 border-b border-slate-800">
+        <h1 className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-br from-white to-slate-500 mb-6 italic tracking-tight">
+          KATALIST
         </h1>
         <Button 
-          className="w-full justify-start font-semibold mb-4 bg-primary hover:bg-primary/90 text-primary-foreground"
+          className="w-full justify-start font-bold mb-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-lg shadow-primary/10 transition-all active:scale-95"
           onClick={() => router.push('/')}
         >
           <Plus className="w-4 h-4 mr-2" />
-          Create Project
+          New Story
         </Button>
       </div>
 
-      <nav className="flex-1 px-4 py-4 space-y-8 flex flex-col overflow-hidden">
+      <nav className="flex-1 px-4 py-6 space-y-8 flex flex-col overflow-hidden bg-slate-950/50">
         <div>
-          <p className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4 opacity-50">Recent Activity</p>
+          <p className="px-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4">Activity</p>
           <div className="space-y-1">
             {isLoading ? (
-               <div className="px-3 py-2 text-xs text-muted-foreground animate-pulse">Scanning database...</div>
+               <div className="px-3 py-2 text-xs text-slate-600 animate-pulse">Scanning...</div>
             ) : projects.length === 0 ? (
-               <div className="px-3 py-2 text-xs text-muted-foreground italic">No projects found.</div>
+               <div className="px-3 py-2 text-xs text-slate-600 italic">Empty library</div>
             ) : (
               projects.slice(0, 3).map((p) => (
                 <div 
                   key={p.id} 
                   onClick={() => router.push(`/?id=${p.id}`)}
-                  className="flex justify-between items-center group px-3 py-2 rounded-xl text-sm text-muted-foreground hover:bg-primary/5 hover:text-primary font-bold transition-all cursor-pointer"
+                  className="flex justify-between items-center group px-3 py-2.5 rounded-xl text-sm text-slate-400 hover:bg-slate-900 hover:text-white font-semibold transition-all cursor-pointer border border-transparent hover:border-slate-800"
                 >
                   <div className="flex items-center space-x-3 overflow-hidden">
-                    <Video className="w-3.5 h-3.5 shrink-0" />
+                    <Video className="w-4 h-4 text-slate-500" />
                     <span className="truncate">{p.title || 'Untitled'}</span>
                   </div>
                 </div>
@@ -78,24 +78,24 @@ export function Sidebar() {
         </div>
 
         <div className="flex-1 flex flex-col min-h-0">
-          <p className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4 opacity-50">All Projects</p>
+          <p className="px-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4">Library</p>
           <ScrollArea className="flex-1">
-            <div className="space-y-1 block pr-4">
+            <div className="space-y-1 pr-4">
               {projects.map((p) => (
                 <div 
                   key={p.id} 
                   onClick={() => router.push(`/?id=${p.id}`)}
-                  className="flex justify-between items-center group px-3 py-1.5 rounded-lg text-xs text-muted-foreground/80 hover:bg-muted/50 hover:text-foreground font-medium transition-colors cursor-pointer"
+                  className="flex justify-between items-center group px-3 py-2 rounded-xl text-xs text-slate-500 hover:bg-slate-900 hover:text-slate-200 font-medium transition-all cursor-pointer border border-transparent hover:border-slate-800"
                 >
                   <span className="truncate">{p.title || 'Untitled Project'}</span>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive transition-all shrink-0"
+                    className="h-7 w-7 opacity-0 group-hover:opacity-100 hover:bg-red-950/50 hover:text-red-400 transition-all shrink-0 rounded-lg"
                     onClick={(e) => handleDelete(e, p.id)}
                     disabled={deleteMutation.isPending}
                   >
-                    <Trash2 className="w-3 h-3" />
+                    <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </div>
               ))}
@@ -103,19 +103,22 @@ export function Sidebar() {
           </ScrollArea>
         </div>
 
-        <div className="mt-auto space-y-1">
-          <Link href="#" className="flex items-center space-x-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground font-medium transition-colors">
-            <ImageIcon className="w-5 h-5" />
-            <span>Library</span>
+        <div className="mt-auto space-y-1 pt-4 border-t border-slate-900">
+          <Link href="#" className="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-900 hover:text-white font-semibold transition-all border border-transparent hover:border-slate-800">
+            <ImageIcon className="w-4 h-4" />
+            <span className="text-sm">Assets</span>
           </Link>
-          <Link href="#" className="flex items-center space-x-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground font-medium transition-colors">
-            <Settings className="w-5 h-5" />
-            <span>Settings</span>
+          <Link href="#" className="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-900 hover:text-white font-semibold transition-all border border-transparent hover:border-slate-800">
+            <Settings className="w-4 h-4" />
+            <span className="text-sm">Settings</span>
           </Link>
         </div>
       </nav>
-      <div className="p-4 border-t">
-        <p className="text-xs text-muted-foreground px-2">Katalist Remake v0.1</p>
+      <div className="p-4 bg-slate-950 border-t border-slate-900">
+        <div className="flex items-center px-2 space-x-2">
+            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+            <p className="text-[10px] font-bold text-slate-600 tracking-tighter uppercase uppercase tracking-widest">v0.1.0 // Production</p>
+        </div>
       </div>
     </aside>
   );

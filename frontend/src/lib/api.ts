@@ -15,7 +15,6 @@ export interface Image {
 export interface Scene {
   id?: string;
   sceneOrder: number;
-  visualDescription: string;
   audioScript: string;
   durationSeconds: number;
   imagePrompt: string;
@@ -32,13 +31,13 @@ export interface Project {
   updatedAt: string;
 }
 
-export const generateStoryboard = async (story: string): Promise<Project> => {
+export const generateStoryboard = async (story: string, visualStyle?: string): Promise<Project> => {
   const response = await fetch(`${API_BASE_URL}/projects/generate`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ story }),
+    body: JSON.stringify({ story, visualStyle }),
   });
 
   if (!response.ok) {
@@ -74,13 +73,13 @@ export const getVoices = async (): Promise<string[]> => {
   return data.available_voices || [];
 };
 
-export const generateImage = async (prompt: string, sceneId?: string): Promise<string> => {
+export const generateImage = async (prompt: string, sceneId?: string, model: string = 'FLUX'): Promise<string> => {
   const response = await fetch(`${API_BASE_URL}/images`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ prompt, sceneId }),
+    body: JSON.stringify({ prompt, sceneId, model }),
   });
 
   if (!response.ok) {
@@ -112,10 +111,11 @@ export const getAllProjects = async (): Promise<Project[]> => {
 };
 
 export const generateAllAudio = async (projectId: string, voice?: string): Promise<Project> => {
-  let url = `${API_BASE_URL}/projects/${projectId}/generate-all-assets`;
-  if (voice) {
-    url += `?voice=${encodeURIComponent(voice)}`;
-  }
+  let url = `${API_BASE_URL}/projects/${projectId}/generate-all-audio`;
+  const params = new URLSearchParams();
+  if (voice) params.append('voice', voice);
+  url += `?${params.toString()}`;
+
   const response = await fetch(url, {
     method: 'POST',
     headers: {
@@ -124,7 +124,49 @@ export const generateAllAudio = async (projectId: string, voice?: string): Promi
   });
 
   if (!response.ok) {
-    throw new Error('Failed to generate all audio/assets');
+    throw new Error('Failed to generate all audio');
+  }
+
+  return response.json();
+};
+
+export const generateAllImages = async (projectId: string, imageModel: string = 'FLUX'): Promise<Project> => {
+  let url = `${API_BASE_URL}/projects/${projectId}/generate-all-images`;
+  const params = new URLSearchParams();
+  params.append('imageModel', imageModel);
+  url += `?${params.toString()}`;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to generate all images');
+  }
+
+  return response.json();
+};
+
+export const generateAllAssets = async (projectId: string, voice?: string, imageModel: string = 'FLUX'): Promise<Project> => {
+  let url = `${API_BASE_URL}/projects/${projectId}/generate-all-assets`;
+  const params = new URLSearchParams();
+  if (voice) params.append('voice', voice);
+  params.append('imageModel', imageModel);
+  
+  url += `?${params.toString()}`;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to generate all assets');
   }
 
   return response.json();
