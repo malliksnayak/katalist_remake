@@ -11,9 +11,10 @@ EXTRACTION RULES:
 2. Granularity: If a paragraph is long, split it into multiple scenes (e.g., 1 scene per 2 sentences).
 3. Sequence Persistence: Ensure the `sceneOrder` increment covers the entire narrative without skips.
 4. Constraint: If the text is too long for one response, focus only on the provided segment and wait for the next batch.
-5. Mandatory Fields: Every single object in the `scenes` array MUST include all five fields: `sceneOrder`, `visualDescription`, `audioScript`, `durationSeconds`, and `imagePrompt`. NEVER omit any field.
+5. Mandatory Fields: Every single object in the `scenes` array MUST include all four fields: `sceneOrder`, `audioScript`, `durationSeconds`, and `imagePrompt`. NEVER omit any field.
 6. JSON Character Escaping: If the `audioScript` or any other text field contains double quotes ("), you MUST escape them with a backslash (\") or use single quotes (') instead. Ensure the final JSON is perfectly valid.
-
+7. Artistic Style & Visuals: Every `imagePrompt` MUST incorporate the following style: {style}.
+8. Detail & Context: The `imagePrompt` should be highly descriptive and specific to the scene's narrative. Instead of generic descriptions, describe the specific lighting, atmosphere, clothing, and emotions relevant to the `audioScript`. Ensure the visual accurately reflects the storyline.
 STORY:
 {story}
 
@@ -23,10 +24,9 @@ REQUIRED JSON STRUCTURE:
   "scenes": [
     {
       "sceneOrder": integer,
-      "visualDescription": "Detailed scene description for an image generator",
       "audioScript": "The exact text to be spoken in this scene",
       "durationSeconds": integer,
-      "imagePrompt": "Concise DALL-E / Midjourney style image generation prompt"
+      "imagePrompt": "Highly detailed and context-aware scene description for an image generator"
     }
   ]
 }

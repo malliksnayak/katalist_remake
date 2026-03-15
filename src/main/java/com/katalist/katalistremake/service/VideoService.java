@@ -40,7 +40,8 @@ public class VideoService {
         int width = 1024;
         int height = 576; // 16:9
 
-        try (FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(finalVideoFile, width, height, 2)) {
+        try (FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(finalVideoFile, width, height, 2);
+                Java2DFrameConverter converter = new Java2DFrameConverter()) {
             recorder.setVideoCodec(avcodec.AV_CODEC_ID_H264);
             recorder.setFormat("mp4");
             recorder.setFrameRate(FPS);
@@ -49,14 +50,14 @@ public class VideoService {
             recorder.setAudioBitrate(128000);
             recorder.setSampleRate(44100);
             recorder.setPixelFormat(avutil.AV_PIX_FMT_YUV420P);
-            
+
             recorder.start();
 
-            Java2DFrameConverter converter = new Java2DFrameConverter();
             long globalTimestamp = 0; // in microseconds
 
             for (Scene scene : scenes) {
-                if (scene.getImage() == null || scene.getAudio() == null) continue;
+                if (scene.getImage() == null || scene.getAudio() == null)
+                    continue;
 
                 // Load Image and apply Letterboxing
                 byte[] imageBytes = Base64.getDecoder().decode(scene.getImage().getImageBase64());
@@ -90,36 +91,37 @@ public class VideoService {
                             }
                         }
                     }
-                    
+
                     // After audio ends, ensure video frames cover the full length of the audio
                     long audioDuration = audioGrabber.getLengthInTime();
                     long sceneContentEnd = sceneStartTimestamp + audioDuration;
-                    
+
                     while (globalTimestamp < sceneContentEnd) {
                         recorder.setTimestamp(globalTimestamp);
                         recorder.record(imageFrame);
                         globalTimestamp += (1000000 / FPS);
                     }
-                    
+
                     audioGrabber.stop();
                 }
 
                 // Add 1.0s pause (Silent video and audio frames)
-                long pauseEnd = globalTimestamp + (long)(PAUSE_DURATION * 1000000);
-                
+                long pauseEnd = globalTimestamp + (long) (PAUSE_DURATION * 1000000);
+
                 int samplesPerFrame = recorder.getSampleRate() / FPS;
-                java.nio.ShortBuffer silentSamples = java.nio.ShortBuffer.allocate(samplesPerFrame * recorder.getAudioChannels());
+                java.nio.ShortBuffer silentSamples = java.nio.ShortBuffer
+                        .allocate(samplesPerFrame * recorder.getAudioChannels());
 
                 while (globalTimestamp < pauseEnd) {
                     recorder.setTimestamp(globalTimestamp);
                     recorder.record(imageFrame);
-                    
+
                     recorder.setTimestamp(globalTimestamp);
                     recorder.recordSamples(recorder.getSampleRate(), recorder.getAudioChannels(), silentSamples);
-                    
+
                     globalTimestamp += (1000000 / FPS);
                 }
-                
+
                 tempAudioFile.delete();
             }
 
@@ -135,17 +137,17 @@ public class VideoService {
     private BufferedImage createLetterboxedImage(BufferedImage img, int targetW, int targetH) {
         BufferedImage newImg = new BufferedImage(targetW, targetH, BufferedImage.TYPE_3BYTE_BGR);
         java.awt.Graphics2D g = newImg.createGraphics();
-        
+
         // Fill background with black
         g.setColor(java.awt.Color.BLACK);
         g.fillRect(0, 0, targetW, targetH);
-        
+
         // Calculate scaling
         double imageAspect = (double) img.getWidth() / img.getHeight();
         double targetAspect = (double) targetW / targetH;
-        
+
         int x = 0, y = 0, w = targetW, h = targetH;
-        
+
         if (imageAspect > targetAspect) {
             // Image is wider than target - letterbox top/bottom
             h = (int) (targetW / imageAspect);
@@ -155,11 +157,12 @@ public class VideoService {
             w = (int) (targetH * imageAspect);
             x = (targetW - w) / 2;
         }
-        
-        g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION, java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
+        g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
+                java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         g.drawImage(img, x, y, w, h, null);
         g.dispose();
-        
+
         return newImg;
     }
 

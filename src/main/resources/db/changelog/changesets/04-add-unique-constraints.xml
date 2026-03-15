@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="add-unique-constraints-for-assets" author="antigravity">
+        <addUniqueConstraint tableName="audios" columnNames="scene_id" constraintName="uk_audio_scene"/>
+        <addUniqueConstraint tableName="images" columnNames="scene_id" constraintName="uk_image_scene"/>
+    </changeSet>
+
+</databaseChangeLog>

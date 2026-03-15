@@ -33,7 +33,8 @@ Create a `.env` file in the root directory:
 ```properties
 # RunPod Settings
 RUNPOD_API_KEY=your_runpod_key_here
-
+# OPENROUTER Settings
+OPENROUTER_API_KEY=your_openrouter_key_here
 # Kokoro TTS Settings
 KOKORO_SERVICE_URL=http://localhost:8000/audio
 

@@ -26,9 +26,6 @@ public class Scene {
     private int sceneOrder;
     
     @Column(columnDefinition = "TEXT")
-    private String visualDescription;
-    
-    @Column(columnDefinition = "TEXT")
     private String audioScript;
     
     private int durationSeconds;

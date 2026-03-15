@@ -52,13 +52,20 @@ public class ScriptService {
         log.debug("Prompt template content:\n{}", promptTemplate);
     }
 
-    public Project generateStoryboard(String redditStory) throws IOException {
+    public Project generateStoryboard(String redditStory, String visualStyle) throws IOException {
         log.info("=== [AI REQUEST] Generating storyboard ===");
 
         log.info("Story input ({} chars): {}", redditStory.length(), redditStory);
 
-        // Substitute {story} placeholder in the template
-        String prompt = promptTemplate.replace("{story}", redditStory);
+        // Fallback style if none provided
+        String finalStyle = (visualStyle == null || visualStyle.isBlank()) 
+                ? "Cinematic, high-quality, photorealistic" 
+                : visualStyle;
+
+        // Substitute placeholders in the template
+        String prompt = promptTemplate
+                .replace("{story}", redditStory)
+                .replace("{style}", finalStyle);
         log.debug("=== [AI PROMPT (after substitution)] ===\n{}", prompt);
 
         try {

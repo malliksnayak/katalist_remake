@@ -1,85 +1,68 @@
 package com.katalist.katalistremake.service.visual;
 
+import com.katalist.katalistremake.service.visual.strategies.ImageGenerationStrategy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class RunPodVisualProvider implements VisualProvider {
 
-    private final RestClient restClient;
+    private final String apiKey;
+    private final Map<String, ImageGenerationStrategy> strategies;
 
     public RunPodVisualProvider(
-            @Value("${runpod.api.url}") String apiUrl,
-            @Value("${runpod.api.key}") String apiKey) {
-        this.restClient = RestClient.builder()
-                .baseUrl(apiUrl)
-                .defaultHeader("Authorization", "Bearer " + apiKey)
-                .defaultHeader("Content-Type", "application/json")
-                .build();
+            @Value("${runpod.api.key}") String apiKey,
+            List<ImageGenerationStrategy> strategyList) {
+        this.apiKey = apiKey;
+        this.strategies = strategyList.stream()
+                .collect(Collectors.toMap(s -> s.getModelName().toUpperCase(), s -> s));
+        log.info("Initialized RunPodVisualProvider with strategies: {}", strategies.keySet());
     }
 
     @Override
-    public String generateImage(String prompt) throws Exception {
-        log.info("Requesting image from RunPod for prompt: {}", prompt);
+    @SuppressWarnings("unchecked")
+    public String generateImage(String prompt, String model) throws Exception {
+        String modelKey = (model == null ? "FLUX" : model).toUpperCase();
+        ImageGenerationStrategy strategy = Optional.ofNullable(strategies.get(modelKey))
+                .orElseGet(() -> {
+                    log.warn("Model '{}' not found, falling back to FLUX", modelKey);
+                    return strategies.get("FLUX");
+                });
 
-        Map<String, Object> input = Map.of(
-                "prompt", prompt,
-                "negative_prompt", "blurry, low quality, deformed, ugly",
-                "height", 512,
-                "width", 512,
-                "num_inference_steps", 4,
-                "guidance_scale", 0.0,
-                "seed", 1337,
-                "num_images", 1
-        );
+        log.info("Requesting image using model: {} for prompt: {}", strategy.getModelName(), prompt);
 
-        Map<String, Object> body = Map.of("input", input);
+        RestClient restClient = RestClient.builder()
+                .baseUrl(strategy.getEndpointUrl())
+                .defaultHeader("Authorization", "Bearer " + apiKey)
+                .defaultHeader("Content-Type", "application/json")
+                .build();
+
+        Map<String, Object> body = strategy.buildPayload(prompt);
 
         try {
-            @SuppressWarnings("unchecked")
             Map<String, Object> response = restClient.post()
                     .body(body)
                     .retrieve()
                     .body(Map.class);
 
-            if (response != null && response.containsKey("output")) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> output = (Map<String, Object>) response.get("output");
-                if (output != null && output.containsKey("images")) {
-                    @SuppressWarnings("unchecked")
-                    List<Object> images = (List<Object>) output.get("images");
-                    if (images != null && !images.isEmpty()) {
-                        Object firstImageObj = images.get(0);
-                        String fullImage = null;
-
-                        if (firstImageObj instanceof String) {
-                            fullImage = (String) firstImageObj;
-                        } else if (firstImageObj instanceof Map) {
-                            @SuppressWarnings("unchecked")
-                            Map<String, Object> imgMap = (Map<String, Object>) firstImageObj;
-                            fullImage = (String) imgMap.get("image");
-                        }
-
-                        if (fullImage != null) {
-                            // Base64 from RunPod might include the prefix "data:image/png;base64,"
-                            if (fullImage.startsWith("data:")) {
-                                return fullImage.substring(fullImage.indexOf(",") + 1);
-                            }
-                            return fullImage;
-                        }
-                    }
-                }
-            }
-            log.error("RunPod response: {}", response);
-            throw new RuntimeException("Unexpected response format from RunPod");
+            return Optional.ofNullable(response)
+                    .map(r -> r.get("output"))
+                    .map(strategy::extractImage)
+                    .map(img -> img.startsWith("data:") ? img.substring(img.indexOf(",") + 1) : img)
+                    .orElseThrow(() -> {
+                        log.error("RunPod response: {}", response);
+                        return new RuntimeException("Unexpected response format from RunPod for model " + strategy.getModelName());
+                    });
         } catch (Exception e) {
-            log.error("RunPod image generation failed", e);
+            log.error("RunPod image generation failed for model {}", strategy.getModelName(), e);
             throw e;
         }
     }

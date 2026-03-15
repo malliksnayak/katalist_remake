@@ -1,5 +1,5 @@
 package com.katalist.katalistremake.service.visual;
 
 public interface VisualProvider {
-    String generateImage(String prompt) throws Exception;
+    String generateImage(String prompt, String model) throws Exception;
 }

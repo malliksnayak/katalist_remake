@@ -7,5 +7,7 @@
 
     <include file="db/changelog/changesets/01-initial-schema.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/changesets/02-add-voice-to-audio.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changesets/03-remove-visual-description.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/changesets/04-add-unique-constraints.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>

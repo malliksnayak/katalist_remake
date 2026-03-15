@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Volume2, Loader2, Wand2, Plus, AlignLeft } from "lucide-react";
-import { getProject, Project, Scene, getVoices, generateAllAudio, generateAudio } from "@/lib/api";
+import { getProject, Project, Scene, getVoices, generateAllAudio, generateAudio, generateAllImages, generateAllAssets } from "@/lib/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { TopBar } from "@/components/layout/TopBar";
 import { Badge } from "@/components/ui/badge";
@@ -42,11 +42,9 @@ function AudioContent() {
     mutationFn: () => generateAllAudio(projectId as string, globalVoice),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['project', projectId] });
-      alert("Batch audio generation complete!");
     },
     onError: (error) => {
       console.error("Batch audio generation failed", error);
-      alert("Failed to generate audio.");
     }
   });
 
@@ -58,7 +56,6 @@ function AudioContent() {
     },
     onError: (error) => {
       console.error("Single audio generation failed", error);
-      alert("Failed to generate audio for this scene.");
     }
   });
 
@@ -69,9 +66,16 @@ function AudioContent() {
   if (!projectId) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-background flex-1">
-        <h3 className="text-xl font-semibold mb-2">No Project Selected</h3>
-        <p className="text-muted-foreground mb-4">Please select a project from the sidebar to generate audio.</p>
-        <Button onClick={() => router.push('/')}>Go to Storyboard</Button>
+        <div className="max-w-md space-y-6">
+          <div className="inline-flex h-20 w-20 items-center justify-center rounded-3xl bg-secondary/10 text-secondary mb-6">
+            <Volume2 className="h-10 w-10" />
+          </div>
+          <h2 className="text-3xl font-black italic tracking-tighter font-heading text-foreground">AUDIO EDITOR</h2>
+          <p className="text-muted-foreground text-sm leading-relaxed">Please select a project from the storyboard to access the master script and audio controls.</p>
+          <Button onClick={() => router.push('/')} className="rounded-full px-8 bg-secondary hover:bg-secondary/90 text-background font-bold h-12 shadow-xl shadow-secondary/20">
+             Return to Storyboard
+          </Button>
+        </div>
       </div>
     );
   }
@@ -79,129 +83,182 @@ function AudioContent() {
   const sortedScenes = [...(project?.scenes || [])].sort((a, b) => a.sceneOrder - b.sceneOrder);
 
   return (
-    <div className="flex flex-col h-full bg-background relative overflow-hidden flex-1 w-full">
-      <TopBar title={project?.title || "Loading..."} />
+    <div className="flex flex-col h-full bg-background text-foreground overflow-hidden font-sans">
+      <TopBar 
+        title={project?.title || "Loading..."} 
+        onGenerateAudio={() => batchAudioMutation.mutate()}
+        isGeneratingAudio={batchAudioMutation.isPending}
+      />
 
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Column - Voice Options (30%) */}
-        <div className="w-full md:w-[30%] flex flex-col border-r bg-card/50 backdrop-blur pb-4 pt-6 px-6 shadow-sm overflow-y-auto">
-          <div className="mb-6">
-            <h1 className="text-xl font-bold flex items-center mb-2">
-              <Volume2 className="w-5 h-5 mr-2 text-primary" /> Note Narrator
-            </h1>
-            <p className="text-sm text-muted-foreground">Select a voice to narrate this storyboard.</p>
+      <div className="flex-1 flex min-h-0 overflow-hidden">
+        {/* Left Column - Voice Options (320px) */}
+        <div className="w-[320px] flex flex-col border-r border-border bg-card/30 backdrop-blur-md transition-all duration-300">
+          <div className="flex-1 overflow-y-auto pb-4 pt-8 px-8 custom-scrollbar">
+            <div className="mb-10">
+              <h1 className="text-3xl font-black flex items-center mb-1 italic tracking-tighter font-heading text-foreground">
+                VOICE LAB
+              </h1>
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] font-heading">Neural Speech Engine</p>
+            </div>
+
+            <div className="space-y-6">
+              <div className="space-y-3">
+                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary flex items-center font-heading">
+                   <Volume2 className="w-3 h-3 mr-2" /> Global Narrator
+                 </label>
+                 {isLoadingVoices ? (
+                   <div className="animate-pulse flex items-center h-12 bg-muted/50 rounded-xl px-4 border border-border">
+                      <Loader2 className="w-4 h-4 animate-spin mr-3 text-muted-foreground"/> 
+                      <span className="text-xs text-muted-foreground font-black uppercase tracking-widest font-heading">Loading...</span>
+                   </div>
+                 ) : (
+                   <select 
+                     value={globalVoice}
+                     onChange={(e) => setGlobalVoice(e.target.value)}
+                     className="w-full h-12 px-4 rounded-xl border border-border bg-background text-sm font-bold text-foreground focus:ring-2 focus:ring-secondary/30 outline-none transition-all cursor-pointer font-sans"
+                   >
+                     {voices.map((v: string) => (
+                       <option key={v} value={v} className="bg-card">{v.replace('_', ' ').toUpperCase()}</option>
+                     ))}
+                   </select>
+                 )}
+              </div>
+
+              <div className="p-5 rounded-2xl bg-secondary/5 border border-secondary/20 relative overflow-hidden group">
+                 <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:rotate-12 transition-transform">
+                    <Volume2 className="h-10 w-10 text-secondary" />
+                 </div>
+                 <h4 className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] mb-2 font-heading">Engine Info</h4>
+                 <p className="text-[11px] font-semibold text-muted-foreground leading-relaxed font-sans">
+                   Powered by Kokoro v1.0. <br/>High-fidelity neural speech synthesis optimized for storytelling.
+                 </p>
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-4 mb-8">
-            <h3 className="font-semibold text-sm">Default Project Voice</h3>
-            {isLoadingVoices ? (
-              <div className="animate-pulse flex items-center space-x-2 text-sm text-muted-foreground"><Loader2 className="w-4 h-4 animate-spin"/> Loading voices...</div>
-            ) : (
-              <select 
-                value={globalVoice}
-                onChange={(e) => setGlobalVoice(e.target.value)}
-                className="w-full h-10 px-3 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-              >
-                {voices.map((v) => (
-                  <option key={v} value={v}>{v.replace('_', ' ').toUpperCase()}</option>
-                ))}
-              </select>
-            )}
+          <div className="mt-auto p-8 pt-6 border-t border-border">
+            <Button 
+              className="w-full h-16 text-sm font-black uppercase tracking-[0.1em] bg-secondary hover:bg-secondary/90 text-background rounded-2xl shadow-xl shadow-secondary/20 transition-all active:scale-[0.98] font-heading group"
+              onClick={() => batchAudioMutation.mutate()}
+              disabled={batchAudioMutation.isPending || !project?.scenes?.length || isLoadingVoices}
+            >
+              {batchAudioMutation.isPending ? (
+                <div className="flex items-center">
+                  <Loader2 className="w-5 h-5 mr-3 animate-spin" /> SYNTHESIZING...
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  RENDER ALL SCRIPT <Wand2 className="ml-3 h-4 w-4 group-hover:rotate-12 transition-transform" />
+                </div>
+              )}
+            </Button>
           </div>
-
-          <Button 
-            className="w-full h-12 text-base font-semibold bg-primary"
-            onClick={() => batchAudioMutation.mutate()}
-            disabled={batchAudioMutation.isPending || !project?.scenes?.length || isLoadingVoices}
-          >
-            {batchAudioMutation.isPending ? (
-              <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Rendering All...</>
-            ) : (
-              <><Wand2 className="w-5 h-5 mr-2" /> Batch Generate Audio</>
-            )}
-          </Button>
-          
-          <p className="mt-4 text-xs text-muted-foreground text-center">
-            This will fetch lifelike speech from the Kokoro TTS engine.
-          </p>
         </div>
 
-        {/* Right Column - Script Preview (70%) */}
-        <div className="w-full md:w-[70%] bg-muted/20 flex flex-col h-full">
-           <ScrollArea className="flex-1 w-full px-6 py-6 pb-24 h-[calc(100vh-4rem)]">
-            <div className="max-w-2xl mx-auto space-y-4">
-              <h2 className="text-lg font-semibold mb-6 text-foreground/80">Project Script Review</h2>
+        {/* Right Column - Script Preview (Flexible) */}
+        <div className="flex-1 bg-background/50 flex flex-col relative min-h-0">
+           {/* Background Glow */}
+           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-secondary/5 blur-[120px] rounded-full pointer-events-none" />
+
+           <div className="flex-1 w-full relative z-10 overflow-y-auto custom-scrollbar">
+            <div className="max-w-4xl mx-auto space-y-8 px-12 py-12 pb-24">
+              <div className="flex items-center justify-between mb-12">
+                <div>
+                  <h2 className="text-sm font-black uppercase tracking-[0.3em] text-muted-foreground font-heading mb-1">Production Script</h2>
+                  <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest font-heading">Final broadcast version review</p>
+                </div>
+                <div className="text-[10px] font-black text-foreground bg-muted rounded-md px-4 py-2 border border-border shadow-sm font-heading">
+                    {project?.scenes?.length || 0} SECTIONS TOTAL
+                </div>
+              </div>
+              
               {isLoadingProject ? (
-                <>
+                <div className="space-y-6">
                   {[1, 2, 3].map((i) => (
-                    <Card key={i} className="mb-4 shadow-sm opacity-80"><CardContent className="p-4"><Skeleton className="h-6 w-3/4 mb-2"/><Skeleton className="h-4 w-full"/></CardContent></Card>
+                    <div key={i} className="h-48 w-full rounded-3xl bg-muted/20 border border-border animate-pulse" />
                   ))}
-                </>
+                </div>
               ) : project?.scenes && project.scenes.length > 0 ? (
                 sortedScenes.map((scene: Scene, i: number) => {
                   const currentVoice = sceneVoices[scene.id!] || globalVoice;
-                  // @ts-ignore - voice is added to model now
+                  // @ts-ignore - added to model
                   const cachedVoice = scene.audio?.voice;
                   const isProcessing = generateSingleAudioMutation.isPending && 
                                       generateSingleAudioMutation.variables?.sceneId === scene.id;
 
                   return (
-                    <Card key={scene.id || i} className="overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                      <div className="p-3 bg-muted/30 border-b flex justify-between items-center text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                        <div className="flex items-center space-x-2">
-                          <span>Scene {scene.sceneOrder}</span>
+                    <div key={scene.id || i} className="overflow-hidden bg-card/40 backdrop-blur-md border border-border shadow-md hover:shadow-xl hover:border-secondary/30 transition-all rounded-3xl group">
+                      <div className="p-5 border-b border-border bg-background/40 flex justify-between items-center">
+                        <div className="flex items-center space-x-4">
+                          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground font-heading">SECTION {scene.sceneOrder}</span>
                           {cachedVoice && (
-                            <Badge variant="outline" className="text-[10px] py-0 h-4 normal-case font-medium">
-                              {cachedVoice}
-                            </Badge>
+                            <div className="px-2.5 py-1 bg-secondary text-background text-[9px] font-black rounded-md tracking-tighter font-heading">
+                              {cachedVoice.toUpperCase()}
+                            </div>
                           )}
                         </div>
-                        {scene.audio ? <span className="text-green-600 bg-green-100 px-2 py-0.5 rounded-full border border-green-200">Audio Ready</span> : <span className="text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-200">No Audio</span>}
+                        {scene.audio ? (
+                           <div className="flex items-center space-x-2 text-secondary font-black text-[9px] uppercase tracking-widest font-heading">
+                             <div className="h-1.5 w-1.5 rounded-full bg-secondary shadow-[0_0_8px_rgba(34,211,238,0.8)] animate-pulse" />
+                             <span>SYNCED</span>
+                           </div>
+                        ) : (
+                           <div className="flex items-center space-x-2 text-muted-foreground font-black text-[9px] uppercase tracking-widest font-heading">
+                             <div className="h-1.5 w-1.5 rounded-full bg-muted border border-border" />
+                             <span>PENDING</span>
+                           </div>
+                        )}
                       </div>
-                      <CardContent className="p-4">
-                        <p className="text-sm font-mono leading-relaxed bg-muted/20 p-4 rounded-lg italic mb-4">
+                      <div className="p-8">
+                        <div className="bg-background/20 p-6 rounded-2xl border border-border/50 text-xl font-medium leading-relaxed italic text-foreground/90 font-sans mb-8">
                           "{scene.audioScript}"
-                        </p>
+                        </div>
                         
-                        <div className="flex items-center space-x-3 mb-4">
-                          <select 
-                            value={currentVoice}
-                            onChange={(e) => handleSceneVoiceChange(scene.id!, e.target.value)}
-                            className="h-8 px-2 rounded-md border border-input bg-background text-xs font-medium focus:ring-1 focus:ring-primary w-40"
-                          >
-                            {voices.map((v) => (
-                              <option key={v} value={v}>{v.replace('_', ' ').toUpperCase()}</option>
-                            ))}
-                          </select>
+                        <div className="flex items-center gap-4">
+                           <div className="flex-1 h-12 flex items-center bg-background border border-border rounded-xl px-5 transition-all focus-within:ring-2 focus-within:ring-secondary/20">
+                             <span className="text-[10px] font-black text-muted-foreground tracking-[0.2em] mr-6 font-heading">VOICE</span>
+                             <select 
+                                value={currentVoice}
+                                onChange={(e) => handleSceneVoiceChange(scene.id!, e.target.value)}
+                                className="bg-transparent text-xs font-black text-foreground focus:ring-0 outline-none cursor-pointer flex-1 font-heading"
+                              >
+                                {voices.map((v: string) => (
+                                  <option key={v} value={v} className="bg-card">{v.replace('_', ' ').toUpperCase()}</option>
+                                ))}
+                              </select>
+                           </div>
+
                           <Button 
-                            size="sm" 
-                            variant="secondary" 
-                            className="h-8 text-[11px] font-bold"
+                            className="h-12 px-8 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] bg-muted hover:bg-muted/80 text-foreground border border-border shadow-sm active:scale-95 transition-all font-heading"
                             onClick={() => generateSingleAudioMutation.mutate({ 
                               sceneId: scene.id!, 
                               text: scene.audioScript, 
                               voice: currentVoice 
+                              //@ts-ignore
                             })}
                             disabled={isProcessing}
                           >
-                            {isProcessing ? <Loader2 className="w-3 h-3 animate-spin"/> : "REGENERATE"}
+                            {isProcessing ? <Loader2 className="w-3.5 h-3.5 animate-spin"/> : "REGENERATE"}
                           </Button>
                         </div>
 
                         {scene.audio?.audioBase64 && (
-                          <div className="pt-4 border-t">
-                            <audio className="w-full h-8 outline-none grayscale" controls src={`data:audio/wav;base64,${scene.audio.audioBase64}`} />
+                          <div className="mt-8 pt-6 border-t border-border flex flex-col gap-4">
+                            <audio className="w-full h-10 outline-none cinematic-audio-player" controls src={`data:audio/wav;base64,${scene.audio.audioBase64}`} />
                           </div>
                         )}
-                      </CardContent>
-                    </Card>
+                      </div>
+                    </div>
                   );
                 })
               ) : (
-                <div className="flex justify-center mt-20 text-muted-foreground italic text-sm">No scenes to display.</div>
+                <div className="flex flex-col items-center justify-center mt-32 text-muted-foreground/20">
+                  <AlignLeft className="h-20 w-20 mb-6" />
+                  <p className="font-black uppercase tracking-[0.3em] text-[10px] font-heading">No script sections found</p>
+                </div>
               )}
             </div>
-           </ScrollArea>
+          </div>
         </div>
       </div>
     </div>
@@ -210,7 +267,7 @@ function AudioContent() {
 
 export default function AudioPage() {
   return (
-    <Suspense fallback={<div className="flex w-full h-full items-center justify-center bg-background"><Loader2 className="w-8 h-8 animate-spin text-primary"/></div>}>
+    <Suspense fallback={<div className="flex w-full h-full items-center justify-center bg-background"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
       <AudioContent />
     </Suspense>
   );
