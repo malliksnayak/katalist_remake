@@ -172,6 +172,22 @@ export const generateAllAssets = async (projectId: string, voice?: string, image
   return response.json();
 };
 
+export const updateProject = async (id: string, updates: Partial<Project>): Promise<Project> => {
+  const response = await fetch(`${API_BASE_URL}/projects/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(updates),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to update project');
+  }
+
+  return response.json();
+};
+
 export const deleteProject = async (id: string): Promise<void> => {
   const response = await fetch(`${API_BASE_URL}/projects/${id}`, {
     method: 'DELETE',
@@ -184,6 +200,32 @@ export const deleteProject = async (id: string): Promise<void> => {
 
 export const getVideoDownloadUrl = (projectId: string): string => {
   return `${API_BASE_URL}/video/download/${projectId}`;
+};
+
+export const updateScene = async (id: string, updates: Partial<Scene>): Promise<Scene> => {
+  const response = await fetch(`${API_BASE_URL}/scenes/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(updates),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to update scene');
+  }
+
+  return response.json();
+};
+
+export const deleteSceneFromApi = async (id: string): Promise<void> => {
+  const response = await fetch(`${API_BASE_URL}/scenes/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to delete scene');
+  }
 };
 
 export const downloadVideo = async (projectId: string, filename: string = 'video.mp4') => {

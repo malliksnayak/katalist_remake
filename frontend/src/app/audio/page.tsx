@@ -21,7 +21,6 @@ function AudioContent() {
 
   const [project, setProject] = useState<Project | null>(null);
   const [globalVoice, setGlobalVoice] = useState<string>("af_bella");
-  const [imageModel, setImageModel] = useState<string>("SDXL TURBO");
   const [sceneVoices, setSceneVoices] = useState<Record<string, string>>({});
 
   const { data: loadedProject, isLoading: isLoadingProject } = useQuery({
@@ -43,23 +42,9 @@ function AudioContent() {
     mutationFn: () => generateAllAudio(projectId as string, globalVoice),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['project', projectId] });
-      alert("Batch audio generation complete!");
     },
     onError: (error) => {
       console.error("Batch audio generation failed", error);
-      alert("Failed to generate audio.");
-    }
-  });
-
-  const batchVisualsMutation = useMutation({
-    mutationFn: () => generateAllImages(projectId as string, imageModel),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['project', projectId] });
-      alert("Batch visuals generation complete!");
-    },
-    onError: (error) => {
-      console.error("Batch visuals generation failed", error);
-      alert("Failed to generate visuals.");
     }
   });
 
@@ -71,7 +56,6 @@ function AudioContent() {
     },
     onError: (error) => {
       console.error("Single audio generation failed", error);
-      alert("Failed to generate audio for this scene.");
     }
   });
 
@@ -82,9 +66,16 @@ function AudioContent() {
   if (!projectId) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-background flex-1">
-        <h3 className="text-xl font-semibold mb-2">No Project Selected</h3>
-        <p className="text-muted-foreground mb-4">Please select a project from the sidebar to generate audio.</p>
-        <Button onClick={() => router.push('/')}>Go to Storyboard</Button>
+        <div className="max-w-md space-y-6">
+          <div className="inline-flex h-20 w-20 items-center justify-center rounded-3xl bg-secondary/10 text-secondary mb-6">
+            <Volume2 className="h-10 w-10" />
+          </div>
+          <h2 className="text-3xl font-black italic tracking-tighter font-heading text-foreground">AUDIO EDITOR</h2>
+          <p className="text-muted-foreground text-sm leading-relaxed">Please select a project from the storyboard to access the master script and audio controls.</p>
+          <Button onClick={() => router.push('/')} className="rounded-full px-8 bg-secondary hover:bg-secondary/90 text-background font-bold h-12 shadow-xl shadow-secondary/20">
+             Return to Storyboard
+          </Button>
+        </div>
       </div>
     );
   }
@@ -92,147 +83,158 @@ function AudioContent() {
   const sortedScenes = [...(project?.scenes || [])].sort((a, b) => a.sceneOrder - b.sceneOrder);
 
   return (
-    <div className="flex flex-col h-full bg-background relative overflow-hidden flex-1 w-full">
+    <div className="flex flex-col h-full bg-background text-foreground overflow-hidden font-sans">
       <TopBar 
         title={project?.title || "Loading..."} 
         onGenerateAudio={() => batchAudioMutation.mutate()}
-        onGenerateVisuals={() => batchVisualsMutation.mutate()}
         isGeneratingAudio={batchAudioMutation.isPending}
-        isGeneratingVisuals={batchVisualsMutation.isPending}
       />
 
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Column - Voice Options (30%) */}
-        <div className="w-full md:w-[30%] flex flex-col border-r border-slate-800 bg-slate-950/60 backdrop-blur-xl pb-4 pt-6 px-6 shadow-xl overflow-y-auto">
-          <div className="mb-8">
-            <h1 className="text-xl font-black flex items-center mb-2 italic tracking-tight">
-              <Volume2 className="w-5 h-5 mr-3 text-primary" /> NARRATOR
-            </h1>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Global project narration settings</p>
+      <div className="flex-1 flex min-h-0 overflow-hidden">
+        {/* Left Column - Voice Options (320px) */}
+        <div className="w-[320px] flex flex-col border-r border-border bg-card/30 backdrop-blur-md transition-all duration-300">
+          <div className="flex-1 overflow-y-auto pb-4 pt-8 px-8 custom-scrollbar">
+            <div className="mb-10">
+              <h1 className="text-3xl font-black flex items-center mb-1 italic tracking-tighter font-heading text-foreground">
+                VOICE LAB
+              </h1>
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] font-heading">Neural Speech Engine</p>
+            </div>
+
+            <div className="space-y-6">
+              <div className="space-y-3">
+                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary flex items-center font-heading">
+                   <Volume2 className="w-3 h-3 mr-2" /> Global Narrator
+                 </label>
+                 {isLoadingVoices ? (
+                   <div className="animate-pulse flex items-center h-12 bg-muted/50 rounded-xl px-4 border border-border">
+                      <Loader2 className="w-4 h-4 animate-spin mr-3 text-muted-foreground"/> 
+                      <span className="text-xs text-muted-foreground font-black uppercase tracking-widest font-heading">Loading...</span>
+                   </div>
+                 ) : (
+                   <select 
+                     value={globalVoice}
+                     onChange={(e) => setGlobalVoice(e.target.value)}
+                     className="w-full h-12 px-4 rounded-xl border border-border bg-background text-sm font-bold text-foreground focus:ring-2 focus:ring-secondary/30 outline-none transition-all cursor-pointer font-sans"
+                   >
+                     {voices.map((v: string) => (
+                       <option key={v} value={v} className="bg-card">{v.replace('_', ' ').toUpperCase()}</option>
+                     ))}
+                   </select>
+                 )}
+              </div>
+
+              <div className="p-5 rounded-2xl bg-secondary/5 border border-secondary/20 relative overflow-hidden group">
+                 <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:rotate-12 transition-transform">
+                    <Volume2 className="h-10 w-10 text-secondary" />
+                 </div>
+                 <h4 className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] mb-2 font-heading">Engine Info</h4>
+                 <p className="text-[11px] font-semibold text-muted-foreground leading-relaxed font-sans">
+                   Powered by Kokoro v1.0. <br/>High-fidelity neural speech synthesis optimized for storytelling.
+                 </p>
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-4 mb-4">
-            <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400">Default Voice</h3>
-            {isLoadingVoices ? (
-              <div className="animate-pulse flex items-center space-x-2 text-xs text-slate-600 font-bold"><Loader2 className="w-4 h-4 animate-spin"/> Loading library...</div>
-            ) : (
-              <select 
-                value={globalVoice}
-                onChange={(e) => setGlobalVoice(e.target.value)}
-                className="w-full h-11 px-4 rounded-xl border border-slate-800 bg-slate-900/50 text-sm font-bold text-slate-200 focus:ring-1 focus:ring-primary/50 outline-none transition-all cursor-pointer"
-              >
-                {voices.map((v) => (
-                  <option key={v} value={v} className="bg-slate-900">{v.replace('_', ' ').toUpperCase()}</option>
-                ))}
-              </select>
-            )}
-          </div>
-
-          <div className="space-y-2 mb-8">
-            <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400">Visual Model</h3>
-            <select 
-              value={imageModel}
-              onChange={(e) => setImageModel(e.target.value)}
-              className="w-full h-11 px-4 rounded-xl border border-slate-800 bg-slate-900/50 text-sm font-bold text-slate-200 focus:ring-1 focus:ring-primary/50 outline-none transition-all cursor-pointer"
+          <div className="mt-auto p-8 pt-6 border-t border-border">
+            <Button 
+              className="w-full h-16 text-sm font-black uppercase tracking-[0.1em] bg-secondary hover:bg-secondary/90 text-background rounded-2xl shadow-xl shadow-secondary/20 transition-all active:scale-[0.98] font-heading group"
+              onClick={() => batchAudioMutation.mutate()}
+              disabled={batchAudioMutation.isPending || !project?.scenes?.length || isLoadingVoices}
             >
-              <option value="SDXL TURBO" className="bg-slate-900">SDXL TURBO (Fast)</option>
-              <option value="SDXL" className="bg-slate-900">SDXL (High Res)</option>
-              <option value="FLUX" className="bg-slate-900">FLUX (Ultra Detailed)</option>
-            </select>
+              {batchAudioMutation.isPending ? (
+                <div className="flex items-center">
+                  <Loader2 className="w-5 h-5 mr-3 animate-spin" /> SYNTHESIZING...
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  RENDER ALL SCRIPT <Wand2 className="ml-3 h-4 w-4 group-hover:rotate-12 transition-transform" />
+                </div>
+              )}
+            </Button>
           </div>
-
-          <Button 
-            className="w-full h-14 text-sm font-black uppercase tracking-[0.1em] bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl shadow-xl shadow-primary/10 transition-all active:scale-95"
-            onClick={() => batchAudioMutation.mutate()}
-            disabled={batchAudioMutation.isPending || !project?.scenes?.length || isLoadingVoices}
-          >
-            {batchAudioMutation.isPending ? (
-              <><Loader2 className="w-5 h-5 mr-3 animate-spin" /> Rendering All...</>
-            ) : (
-              <><Wand2 className="w-5 h-5 mr-3" /> Batch Render All</>
-            )}
-          </Button>
-          
-          <p className="mt-6 text-[10px] text-slate-600 font-bold text-center leading-relaxed max-w-[200px] mx-auto">
-            Powered by Kokoro v1.0. <br/>High-fidelity neural speech synthesis.
-          </p>
         </div>
 
-        {/* Right Column - Script Preview (70%) */}
-        <div className="w-full md:w-[70%] bg-slate-900/30 flex flex-col h-full shadow-inner">
-           <ScrollArea className="flex-1 w-full px-8 py-8 pb-24 h-[calc(100vh-4rem)]">
-            <div className="max-w-3xl mx-auto space-y-6">
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="text-sm font-black uppercase tracking-[0.2em] text-slate-500">Master Script Review</h2>
-                <div className="text-[10px] font-bold text-slate-600 bg-slate-900/50 px-3 py-1 rounded-full border border-slate-800">
+        {/* Right Column - Script Preview (Flexible) */}
+        <div className="flex-1 bg-background/50 flex flex-col relative min-h-0">
+           {/* Background Glow */}
+           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-secondary/5 blur-[120px] rounded-full pointer-events-none" />
+
+           <div className="flex-1 w-full relative z-10 overflow-y-auto custom-scrollbar">
+            <div className="max-w-4xl mx-auto space-y-8 px-12 py-12 pb-24">
+              <div className="flex items-center justify-between mb-12">
+                <div>
+                  <h2 className="text-sm font-black uppercase tracking-[0.3em] text-muted-foreground font-heading mb-1">Production Script</h2>
+                  <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest font-heading">Final broadcast version review</p>
+                </div>
+                <div className="text-[10px] font-black text-foreground bg-muted rounded-md px-4 py-2 border border-border shadow-sm font-heading">
                     {project?.scenes?.length || 0} SECTIONS TOTAL
                 </div>
               </div>
               
               {isLoadingProject ? (
-                <>
+                <div className="space-y-6">
                   {[1, 2, 3].map((i) => (
-                    <Card key={i} className="mb-4 bg-slate-900/50 border-slate-800 animate-pulse"><CardContent className="p-6"><Skeleton className="h-6 w-3/4 mb-4 bg-slate-800"/><Skeleton className="h-12 w-full bg-slate-800"/></CardContent></Card>
+                    <div key={i} className="h-48 w-full rounded-3xl bg-muted/20 border border-border animate-pulse" />
                   ))}
-                </>
+                </div>
               ) : project?.scenes && project.scenes.length > 0 ? (
                 sortedScenes.map((scene: Scene, i: number) => {
                   const currentVoice = sceneVoices[scene.id!] || globalVoice;
-                  // @ts-ignore - voice is added to model now
+                  // @ts-ignore - added to model
                   const cachedVoice = scene.audio?.voice;
                   const isProcessing = generateSingleAudioMutation.isPending && 
                                       generateSingleAudioMutation.variables?.sceneId === scene.id;
 
                   return (
-                    <Card key={scene.id || i} className="overflow-hidden bg-slate-900/60 backdrop-blur border-slate-800 shadow-xl hover:shadow-2xl hover:border-slate-700 transition-all rounded-2xl group">
-                      <div className="p-4 bg-slate-950/50 border-b border-slate-800 flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                        <div className="flex items-center space-x-3">
-                          <span className="text-slate-500">SECTION {scene.sceneOrder}</span>
+                    <div key={scene.id || i} className="overflow-hidden bg-card/40 backdrop-blur-md border border-border shadow-md hover:shadow-xl hover:border-secondary/30 transition-all rounded-3xl group">
+                      <div className="p-5 border-b border-border bg-background/40 flex justify-between items-center">
+                        <div className="flex items-center space-x-4">
+                          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground font-heading">SECTION {scene.sceneOrder}</span>
                           {cachedVoice && (
-                            <Badge variant="outline" className="text-[9px] py-0 h-4 border-slate-700 text-slate-400 font-bold tracking-tight">
+                            <div className="px-2.5 py-1 bg-secondary text-background text-[9px] font-black rounded-md tracking-tighter font-heading">
                               {cachedVoice.toUpperCase()}
-                            </Badge>
+                            </div>
                           )}
                         </div>
                         {scene.audio ? (
-                           <div className="flex items-center space-x-2 text-blue-400 font-bold">
-                             <div className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
+                           <div className="flex items-center space-x-2 text-secondary font-black text-[9px] uppercase tracking-widest font-heading">
+                             <div className="h-1.5 w-1.5 rounded-full bg-secondary shadow-[0_0_8px_rgba(34,211,238,0.8)] animate-pulse" />
                              <span>SYNCED</span>
                            </div>
                         ) : (
-                           <div className="flex items-center space-x-2 text-slate-600 font-bold">
-                             <div className="h-1.5 w-1.5 rounded-full bg-slate-800" />
+                           <div className="flex items-center space-x-2 text-muted-foreground font-black text-[9px] uppercase tracking-widest font-heading">
+                             <div className="h-1.5 w-1.5 rounded-full bg-muted border border-border" />
                              <span>PENDING</span>
                            </div>
                         )}
                       </div>
-                      <CardContent className="p-6">
-                        <p className="text-lg font-medium leading-relaxed bg-slate-950/30 p-5 rounded-2xl text-slate-200 border border-slate-800/50 italic mb-6">
+                      <div className="p-8">
+                        <div className="bg-background/20 p-6 rounded-2xl border border-border/50 text-xl font-medium leading-relaxed italic text-foreground/90 font-sans mb-8">
                           "{scene.audioScript}"
-                        </p>
+                        </div>
                         
-                        <div className="flex items-center space-x-4">
-                           <div className="flex-1 h-11 flex items-center bg-slate-950/50 rounded-xl px-4 border border-slate-800">
-                             <span className="text-[10px] font-black text-slate-600 tracking-wider mr-4">VOICE:</span>
+                        <div className="flex items-center gap-4">
+                           <div className="flex-1 h-12 flex items-center bg-background border border-border rounded-xl px-5 transition-all focus-within:ring-2 focus-within:ring-secondary/20">
+                             <span className="text-[10px] font-black text-muted-foreground tracking-[0.2em] mr-6 font-heading">VOICE</span>
                              <select 
                                 value={currentVoice}
                                 onChange={(e) => handleSceneVoiceChange(scene.id!, e.target.value)}
-                                className="bg-transparent text-xs font-bold text-primary focus:ring-0 outline-none cursor-pointer flex-1"
+                                className="bg-transparent text-xs font-black text-foreground focus:ring-0 outline-none cursor-pointer flex-1 font-heading"
                               >
-                                {voices.map((v) => (
-                                  <option key={v} value={v} className="bg-slate-900">{v.replace('_', ' ').toUpperCase()}</option>
+                                {voices.map((v: string) => (
+                                  <option key={v} value={v} className="bg-card">{v.replace('_', ' ').toUpperCase()}</option>
                                 ))}
                               </select>
                            </div>
 
                           <Button 
-                            size="sm" 
-                            variant="secondary" 
-                            className="h-11 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
+                            className="h-12 px-8 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] bg-muted hover:bg-muted/80 text-foreground border border-border shadow-sm active:scale-95 transition-all font-heading"
                             onClick={() => generateSingleAudioMutation.mutate({ 
                               sceneId: scene.id!, 
                               text: scene.audioScript, 
                               voice: currentVoice 
+                              //@ts-ignore
                             })}
                             disabled={isProcessing}
                           >
@@ -241,22 +243,22 @@ function AudioContent() {
                         </div>
 
                         {scene.audio?.audioBase64 && (
-                          <div className="mt-6 pt-6 border-t border-slate-800">
-                            <audio className="w-full h-10 outline-none opacity-50 hover:opacity-100 transition-opacity" controls src={`data:audio/wav;base64,${scene.audio.audioBase64}`} />
+                          <div className="mt-8 pt-6 border-t border-border flex flex-col gap-4">
+                            <audio className="w-full h-10 outline-none cinematic-audio-player" controls src={`data:audio/wav;base64,${scene.audio.audioBase64}`} />
                           </div>
                         )}
-                      </CardContent>
-                    </Card>
+                      </div>
+                    </div>
                   );
                 })
               ) : (
-                <div className="flex flex-col items-center justify-center mt-32 text-slate-600">
-                  <AlignLeft className="h-12 w-12 mb-4 opacity-20" />
-                  <p className="font-bold uppercase tracking-widest text-xs">No script sections found</p>
+                <div className="flex flex-col items-center justify-center mt-32 text-muted-foreground/20">
+                  <AlignLeft className="h-20 w-20 mb-6" />
+                  <p className="font-black uppercase tracking-[0.3em] text-[10px] font-heading">No script sections found</p>
                 </div>
               )}
             </div>
-           </ScrollArea>
+          </div>
         </div>
       </div>
     </div>
@@ -265,7 +267,7 @@ function AudioContent() {
 
 export default function AudioPage() {
   return (
-    <Suspense fallback={<div className="flex w-full h-full items-center justify-center bg-background"><Loader2 className="w-8 h-8 animate-spin text-primary"/></div>}>
+    <Suspense fallback={<div className="flex w-full h-full items-center justify-center bg-background"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
       <AudioContent />
     </Suspense>
   );

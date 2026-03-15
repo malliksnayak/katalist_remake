@@ -177,6 +177,18 @@ public class ProjectController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<Project> updateProject(@PathVariable String id, @RequestBody Project updates) {
+        log.info("Updating project {}: {}", id, updates);
+        return projectRepository.findById(id).map(project -> {
+            if (updates.getTitle() != null) {
+                project.setTitle(updates.getTitle());
+            }
+            Project saved = projectRepository.save(project);
+            return ResponseEntity.ok(saved);
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProject(@PathVariable String id) {
         log.info("=== [REQUEST] DELETE /api/v1/projects/{} ===", id);

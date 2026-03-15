@@ -30,40 +30,40 @@ export function TopBar({
   const projectId = searchParams.get('id');
 
   return (
-    <header className="flex-none h-16 border-b border-slate-800 bg-slate-950/80 backdrop-blur-xl flex items-center justify-between px-6 z-50 sticky top-0">
+    <header className="flex-none h-16 border-b border-border bg-background/80 backdrop-blur-xl flex items-center justify-between px-6 z-50 sticky top-0 font-sans">
       <div className="flex items-center space-x-4 w-1/4">
         <div className="flex flex-col">
-          <h2 className="text-[10px] font-black tracking-[0.2em] text-slate-500 uppercase leading-none mb-1">
+          <h2 className="text-[10px] font-black tracking-[0.2em] text-muted-foreground uppercase leading-none mb-1 font-heading">
             Current Project
           </h2>
-          <p className="text-sm font-bold text-slate-200 truncate max-w-[150px]" title={title}>
+          <p className="text-sm font-bold text-foreground truncate max-w-[150px]" title={title}>
             {title}
           </p>
         </div>
       </div>
 
       {projectId && (
-        <div className="flex items-center space-x-1 bg-slate-900/50 p-1 rounded-full border border-slate-800">
+        <div className="flex items-center space-x-1 bg-muted/50 p-1 rounded-full border border-border">
           <Link href={`/?id=${projectId}`}>
             <Button variant={pathname === '/' ? 'secondary' : 'ghost'} size="sm" className={cn(
-               "h-8 rounded-full px-4 text-[11px] font-black uppercase tracking-wider transition-all",
-               pathname === '/' ? "bg-slate-800 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"
+               "h-8 rounded-full px-4 text-[11px] font-black uppercase tracking-wider transition-all font-heading",
+               pathname === '/' ? "bg-card text-foreground shadow-lg border border-border" : "text-muted-foreground hover:text-foreground"
             )}>
               <ListVideo className="w-3.5 h-3.5 mr-2" /> Storyboard
             </Button>
           </Link>
           <Link href={`/audio?id=${projectId}`}>
             <Button variant={pathname === '/audio' ? 'secondary' : 'ghost'} size="sm" className={cn(
-               "h-8 rounded-full px-4 text-[11px] font-black uppercase tracking-wider transition-all",
-               pathname === '/audio' ? "bg-slate-800 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"
+               "h-8 rounded-full px-4 text-[11px] font-black uppercase tracking-wider transition-all font-heading",
+               pathname === '/audio' ? "bg-card text-foreground shadow-lg border border-border" : "text-muted-foreground hover:text-foreground"
             )}>
               <Volume2 className="w-3.5 h-3.5 mr-2" /> Audio
             </Button>
           </Link>
           <Link href={`/video?id=${projectId}`}>
             <Button variant={pathname === '/video' ? 'secondary' : 'ghost'} size="sm" className={cn(
-               "h-8 rounded-full px-4 text-[11px] font-black uppercase tracking-wider transition-all",
-               pathname === '/video' ? "bg-slate-800 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"
+               "h-8 rounded-full px-4 text-[11px] font-black uppercase tracking-wider transition-all font-heading",
+               pathname === '/video' ? "bg-card text-foreground shadow-lg border border-border" : "text-muted-foreground hover:text-foreground"
             )}>
               <Film className="w-3.5 h-3.5 mr-2" /> Video
             </Button>
@@ -76,18 +76,29 @@ export function TopBar({
           <Button 
             variant="ghost" 
             size="sm" 
-            className="rounded-full font-black text-[10px] uppercase tracking-wider text-blue-400 hover:text-blue-300 hover:bg-blue-900/20"
+            className="rounded-full font-black text-[10px] uppercase tracking-widest text-secondary hover:text-secondary/80 hover:bg-secondary/10 font-heading"
             onClick={onGenerateAudio} 
             disabled={isGeneratingAudio}
           >
             {isGeneratingAudio ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><Volume2 className="w-3.5 h-3.5 mr-1.5" /> Batch Audio</>}
           </Button>
         )}
+        {onDownloadVideo && (
+          <Button 
+            variant="default" 
+            size="sm" 
+            className="rounded-full font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground font-heading"
+            onClick={onDownloadVideo} 
+            disabled={isDownloading}
+          >
+            {isDownloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><Download className="w-3.5 h-3.5 mr-1.5" /> Download Video</>}
+          </Button>
+        )}
         {onGenerateVisuals && (
           <Button 
             variant="default" 
             size="sm" 
-            className="rounded-full font-black text-[10px] uppercase tracking-wider shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90"
+            className="rounded-full font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground font-heading"
             onClick={onGenerateVisuals} 
             disabled={isGeneratingVisuals}
           >
