@@ -1,12 +1,13 @@
 package com.katalist.katalistremake.controller;
 
 import com.katalist.katalistremake.model.Project;
-import com.katalist.katalistremake.model.Scene;
 import com.katalist.katalistremake.repository.ProjectRepository;
 import com.katalist.katalistremake.service.ScriptService;
 
+import jakarta.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -19,18 +20,12 @@ import java.util.Map;
 public class ProjectController {
     private final ScriptService scriptService;
     private final ProjectRepository projectRepository;
-    private final AudioController audioController;
-    private final ImageController imageController;
 
-    public ProjectController(ScriptService scriptService, 
-                             ProjectRepository projectRepository, 
-                             AudioController audioController,
-                             ImageController imageController) {
+    public ProjectController(ScriptService scriptService,
+            ProjectRepository projectRepository) {
         this.scriptService = scriptService;
         this.projectRepository = projectRepository;
-        this.audioController = audioController;
-        this.imageController = imageController;
-        log.info("ProjectController registered – endpoints for projects and assets are LIVE.");
+        log.info("ProjectController MVP online.");
     }
 
     @PostMapping(value = "/generate", produces = "application/json")
@@ -38,24 +33,18 @@ public class ProjectController {
         String story = request.get("story");
         String visualStyle = request.get("visualStyle");
 
-        log.info("=== [REQUEST] POST /api/v1/projects/generate ===");
+        String voice = request.getOrDefault("voice", "af_bella");
+        log.info("=== [MVP REQUEST] POST /api/v1/projects/generate ===");
 
         if (story == null || story.isBlank()) {
-            log.warn("Request rejected – 'story' field is missing or blank.");
             return ResponseEntity.badRequest().build();
         }
 
-        log.info("Story received ({} chars). Visual Style: {}. Delegating to ScriptService...", 
-                 story.length(), visualStyle != null ? visualStyle : "Default");
-
         try {
-            Project project = scriptService.generateStoryboard(story, visualStyle);
-            log.info("=== [RESPONSE] 200 OK – returning project \"{}\" with ID {} ===",
-                    project.getTitle(),
-                    project.getId());
-            return ResponseEntity.ok(project);
+            Project newProject = scriptService.generateStoryboard(story, visualStyle, voice);
+            return ResponseEntity.ok(newProject);
         } catch (IOException e) {
-            log.error("=== [RESPONSE] 500 Internal Server Error – {}", e.getMessage());
+            log.error("Generation failed: {}", e.getMessage());
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -66,138 +55,80 @@ public class ProjectController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Project> getProjectById(@PathVariable String id) {
+    public ResponseEntity<Project> getProjectById(@PathVariable @Nonnull String id) {
+        if (id == null || id.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return projectRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PatchMapping("/{id}")
+    @SuppressWarnings("null")
+    public ResponseEntity<Project> updateProject(@PathVariable String id, @RequestBody Project updates) {
+        if (id == null || id.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
         return projectRepository.findById(id)
                 .map(project -> {
-                    long audioCount = project.getScenes().stream()
-                            .filter(s -> s.getAudio() != null)
-                            .count();
-                    log.info("Fetching Project {}: Found {}/{} scenes with audio.", id, audioCount, project.getScenes().size());
-                    return ResponseEntity.ok(project);
+                    if (updates.getTitle() != null)
+                        project.setTitle(updates.getTitle());
+                    if (updates.getVisualStyle() != null)
+                        project.setVisualStyle(updates.getVisualStyle());
+                    Project savedProject = projectRepository.save(project);
+                    return ResponseEntity.ok(savedProject);
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping("/{id}/generate-all-assets")
-    public ResponseEntity<Project> generateAllAssets(@PathVariable String id, 
-                                                    @RequestParam(defaultValue = "af_bella") String voice,
-                                                    @RequestParam(defaultValue = "FLUX") String imageModel) {
-        log.info("=== [BATCH REQUEST] Generating ALL assets (SEQUENTIAL: Audio THEN Images) for project {} ===", id);
-        return projectRepository.findById(id).map(project -> {
-            // STEP 1: ALL AUDIO FIRST (Sequential for stability)
-            log.info("Step 1/2: Generating all audio scenes...");
-            for (Scene scene : project.getScenes()) {
-                if (scene.getAudioScript() != null && !scene.getAudioScript().isBlank()) {
-                    try {
-                        audioController.processAudioGeneration(scene.getId(), scene.getAudioScript(), voice, false);
-                    } catch (Exception e) {
-                        log.error("Failed to generate audio for scene {}", scene.getId(), e);
-                    }
+    @GetMapping("/{id}/export")
+    public void exportProject(@PathVariable @NonNull String id, jakarta.servlet.http.HttpServletResponse response)
+            throws IOException {
+        Project project = projectRepository.findById(id).orElseThrow(() -> new IOException("Project not found"));
+
+        response.setContentType("application/zip");
+        response.setHeader("Content-Disposition", "attachment; filename=\"project_" + id + ".zip\"");
+
+        try (java.util.zip.ZipOutputStream zos = new java.util.zip.ZipOutputStream(response.getOutputStream())) {
+            List<com.katalist.katalistremake.model.Scene> scenes = project.getScenes();
+            scenes.sort(java.util.Comparator.comparingInt(com.katalist.katalistremake.model.Scene::getOrderIndex));
+
+            for (int i = 0; i < scenes.size(); i++) {
+                com.katalist.katalistremake.model.Scene scene = scenes.get(i);
+                String sequence = String.format("%02d", i + 1);
+
+                // Add Image
+                if (scene.getImageBase64() != null) {
+                    byte[] imageData = java.util.Base64.getDecoder().decode(scene.getImageBase64());
+                    java.util.zip.ZipEntry imgEntry = new java.util.zip.ZipEntry("scene_" + sequence + ".png");
+                    zos.putNextEntry(imgEntry);
+                    zos.write(imageData);
+                    zos.closeEntry();
+                }
+
+                // Add Audio
+                if (scene.getAudioBase64() != null) {
+                    byte[] audioData = java.util.Base64.getDecoder().decode(scene.getAudioBase64());
+                    java.util.zip.ZipEntry audioEntry = new java.util.zip.ZipEntry("scene_" + sequence + ".wav");
+                    zos.putNextEntry(audioEntry);
+                    zos.write(audioData);
+                    zos.closeEntry();
                 }
             }
-
-            // STEP 2: ALL IMAGES SECOND (Concurrent - 3 at a time)
-            log.info("Step 2/2: Generating all image scenes (Multi-threaded, pool=3)...");
-            List<Scene> scenesWithPrompts = project.getScenes().stream()
-                    .filter(s -> s.getImagePrompt() != null && !s.getImagePrompt().isBlank())
-                    .toList();
-
-            java.util.concurrent.ExecutorService imageExecutor = java.util.concurrent.Executors.newFixedThreadPool(3);
-            try {
-                List<java.util.concurrent.CompletableFuture<Void>> futures = scenesWithPrompts.stream()
-                        .map(scene -> java.util.concurrent.CompletableFuture.runAsync(() -> {
-                            try {
-                                imageController.processImageGeneration(scene.getId(), scene.getImagePrompt(), imageModel, false);
-                            } catch (Exception e) {
-                                log.error("Failed to generate image for scene {}", scene.getId(), e);
-                            }
-                        }, imageExecutor))
-                        .toList();
-
-                java.util.concurrent.CompletableFuture.allOf(futures.toArray(new java.util.concurrent.CompletableFuture[0])).join();
-            } finally {
-                imageExecutor.shutdown();
-            }
-
-            return projectRepository.findById(id)
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
-        }).orElse(ResponseEntity.notFound().build());
-    }
-
-    @PostMapping("/{id}/generate-all-audio")
-    public ResponseEntity<Project> generateAllAudio(@PathVariable String id, 
-                                                   @RequestParam(defaultValue = "af_bella") String voice) {
-        log.info("=== [BATCH REQUEST] Generating ONLY Audio for project {} ===", id);
-        return projectRepository.findById(id).map(project -> {
-            for (Scene scene : project.getScenes()) {
-                if (scene.getAudioScript() != null && !scene.getAudioScript().isBlank()) {
-                    try {
-                        audioController.processAudioGeneration(scene.getId(), scene.getAudioScript(), voice, false);
-                    } catch (Exception e) {
-                        log.error("Failed to generate audio for scene {}", scene.getId(), e);
-                    }
-                }
-            }
-            return projectRepository.findById(id)
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
-        }).orElse(ResponseEntity.notFound().build());
-    }
-
-    @PostMapping("/{id}/generate-all-images")
-    public ResponseEntity<Project> generateAllImages(@PathVariable String id, 
-                                                    @RequestParam(defaultValue = "FLUX") String imageModel) {
-        log.info("=== [BATCH REQUEST] Generating ONLY Images for project {} (Multi-threaded, pool=3) ===", id);
-        return projectRepository.findById(id).map(project -> {
-            List<Scene> scenesWithPrompts = project.getScenes().stream()
-                    .filter(s -> s.getImagePrompt() != null && !s.getImagePrompt().isBlank())
-                    .toList();
-
-            java.util.concurrent.ExecutorService imageExecutor = java.util.concurrent.Executors.newFixedThreadPool(3);
-            try {
-                List<java.util.concurrent.CompletableFuture<Void>> futures = scenesWithPrompts.stream()
-                        .map(scene -> java.util.concurrent.CompletableFuture.runAsync(() -> {
-                            try {
-                                imageController.processImageGeneration(scene.getId(), scene.getImagePrompt(), imageModel, false);
-                            } catch (Exception e) {
-                                log.error("Failed to generate image for scene {}", scene.getId(), e);
-                            }
-                        }, imageExecutor))
-                        .toList();
-
-                java.util.concurrent.CompletableFuture.allOf(futures.toArray(new java.util.concurrent.CompletableFuture[0])).join();
-            } finally {
-                imageExecutor.shutdown();
-            }
-
-            return projectRepository.findById(id)
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
-        }).orElse(ResponseEntity.notFound().build());
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<Project> updateProject(@PathVariable String id, @RequestBody Project updates) {
-        log.info("Updating project {}: {}", id, updates);
-        return projectRepository.findById(id).map(project -> {
-            if (updates.getTitle() != null) {
-                project.setTitle(updates.getTitle());
-            }
-            Project saved = projectRepository.save(project);
-            return ResponseEntity.ok(saved);
-        }).orElse(ResponseEntity.notFound().build());
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProject(@PathVariable String id) {
-        log.info("=== [REQUEST] DELETE /api/v1/projects/{} ===", id);
+        if (id == null || id.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
         if (projectRepository.existsById(id)) {
             projectRepository.deleteById(id);
-            log.info("Deleted project {}", id);
             return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
         }
+        return ResponseEntity.notFound().build();
     }
 }

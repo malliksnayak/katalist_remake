@@ -1,6 +1,7 @@
 package com.katalist.katalistremake.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,6 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Table(name = "scenes")
 public class Scene {
     @Id
@@ -23,7 +25,7 @@ public class Scene {
     @JsonBackReference
     private Project project;
 
-    private int sceneOrder;
+    private int orderIndex;
     
     @Column(columnDefinition = "TEXT")
     private String audioScript;
@@ -32,13 +34,15 @@ public class Scene {
     
     @Column(columnDefinition = "TEXT")
     private String imagePrompt;
-    
-    
-    @OneToOne(mappedBy = "scene", cascade = CascadeType.ALL, orphanRemoval = true)
-    @com.fasterxml.jackson.annotation.JsonManagedReference
-    private Audio audio;
 
-    @OneToOne(mappedBy = "scene", cascade = CascadeType.ALL, orphanRemoval = true)
-    @com.fasterxml.jackson.annotation.JsonManagedReference
-    private Image image;
+    // AUDIO ASSETS (Merged)
+    @Column(columnDefinition = "TEXT")
+    private String audioBase64;
+    private String audioMimeType;
+    private String voice;
+
+    // IMAGE ASSETS (Merged)
+    @Column(columnDefinition = "TEXT")
+    private String imageBase64;
+    private String imageMimeType;
 }

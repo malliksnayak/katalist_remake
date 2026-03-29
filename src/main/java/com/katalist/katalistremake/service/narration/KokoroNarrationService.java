@@ -10,7 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import jakarta.annotation.Nonnull;
 import java.util.Base64;
+import java.util.Objects;
 import com.fasterxml.jackson.databind.JsonNode;
 
 @Slf4j
@@ -18,11 +20,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 @ConditionalOnProperty(name = "video.narration.provider", havingValue = "kokoro")
 public class KokoroNarrationService implements NarrationProvider {
 
+    @Nonnull
     private final String serviceUrl;
     private final RestTemplate restTemplate;
 
     public KokoroNarrationService(@Value("${kokoro.service.url}") String serviceUrl) {
-        this.serviceUrl = serviceUrl;
+        this.serviceUrl = Objects.requireNonNull(serviceUrl);
         this.restTemplate = new RestTemplate();
         log.info("Started KokoroNarrationService with URL: {}", serviceUrl);
     }

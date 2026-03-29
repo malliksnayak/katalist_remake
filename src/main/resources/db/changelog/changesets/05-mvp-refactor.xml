@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- 1. Update Project table -->
+    <changeSet id="05-add-visual-style-to-projects" author="antigravity">
+        <preConditions onFail="MARK_RAN">
+            <not><columnExists tableName="projects" columnName="visual_style"/></not>
+        </preConditions>
+        <addColumn tableName="projects">
+            <column name="visual_style" type="VARCHAR(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- 2. Update Scene table - Rename Order -->
+    <changeSet id="05-rename-scene-order" author="antigravity">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="scenes" columnName="scene_order"/>
+        </preConditions>
+        <renameColumn tableName="scenes" oldColumnName="scene_order" newColumnName="order_index"/>
+    </changeSet>
+    
+    <!-- 3. Update Scene table - Add Assets -->
+    <changeSet id="05-add-assets-to-scenes" author="antigravity">
+        <preConditions onFail="MARK_RAN">
+            <not><columnExists tableName="scenes" columnName="audio_base64"/></not>
+        </preConditions>
+        <addColumn tableName="scenes">
+            <column name="audio_base64" type="TEXT"/>
+            <column name="audio_mime_type" type="VARCHAR(255)"/>
+            <column name="voice" type="VARCHAR(255)"/>
+            <column name="image_base64" type="TEXT"/>
+            <column name="image_mime_type" type="VARCHAR(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- 4. Drop Audios table -->
+    <changeSet id="05-drop-audios-table" author="antigravity">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="audios"/>
+        </preConditions>
+        <dropTable tableName="audios"/>
+    </changeSet>
+
+    <!-- 5. Drop Images table -->
+    <changeSet id="05-drop-images-table" author="antigravity">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="images"/>
+        </preConditions>
+        <dropTable tableName="images"/>
+    </changeSet>
+
+</databaseChangeLog>

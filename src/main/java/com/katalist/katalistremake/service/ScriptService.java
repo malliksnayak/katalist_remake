@@ -2,129 +2,91 @@ package com.katalist.katalistremake.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.katalist.katalistremake.model.Project;
-import com.katalist.katalistremake.model.Storyboard;
+import com.katalist.katalistremake.model.Scene;
 import com.katalist.katalistremake.repository.ProjectRepository;
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Service
 public class ScriptService {
 
-    private static final String PROMPT_PATH = "classpath:prompts/storyboard.txt";
-
     private final ChatClient chatClient;
     private final ObjectMapper objectMapper;
-    private final ResourceLoader resourceLoader;
     private final ProjectRepository projectRepository;
 
-    private String promptTemplate;
-
     public ScriptService(ChatClient.Builder chatClientBuilder,
-                         ObjectMapper objectMapper,
-                         ResourceLoader resourceLoader,
-                         ProjectRepository projectRepository) {
+            ObjectMapper objectMapper,
+            ProjectRepository projectRepository) {
         this.chatClient = chatClientBuilder.build();
         this.objectMapper = objectMapper;
-        this.resourceLoader = resourceLoader;
         this.projectRepository = projectRepository;
     }
 
-    /**
-     * Load and cache the prompt template once at startup.
-     * Any misconfiguration (e.g. missing file) will fail fast here.
-     */
-    @PostConstruct
-    public void loadPromptTemplate() throws IOException {
-        Resource resource = resourceLoader.getResource(PROMPT_PATH);
-        try (InputStream is = resource.getInputStream()) {
-            promptTemplate = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-        }
-        log.info("Prompt template loaded from '{}' ({} chars).", PROMPT_PATH, promptTemplate.length());
-        log.debug("Prompt template content:\n{}", promptTemplate);
-    }
+    public Project generateStoryboard(String redditStory, String visualStyle, String voice) throws IOException {
+        log.info("=== [AI REQUEST] Generating storyboard MVP ===");
 
-    public Project generateStoryboard(String redditStory, String visualStyle) throws IOException {
-        log.info("=== [AI REQUEST] Generating storyboard ===");
-
-        log.info("Story input ({} chars): {}", redditStory.length(), redditStory);
-
-        // Fallback style if none provided
-        String finalStyle = (visualStyle == null || visualStyle.isBlank()) 
-                ? "Cinematic, high-quality, photorealistic" 
+        String finalStyle = (visualStyle == null || visualStyle.isBlank())
+                ? "Cinematic, high-quality, photorealistic"
                 : visualStyle;
 
-        // Substitute placeholders in the template
-        String prompt = promptTemplate
-                .replace("{story}", redditStory)
-                .replace("{style}", finalStyle);
-        log.debug("=== [AI PROMPT (after substitution)] ===\n{}", prompt);
+        String systemPrompt = "Act as a professional scriptwriter and storyboard artist. " +
+                "Break the following story into a high-granularity storyboard. " +
+                "Each scene MUST represent a small, specific chronological window. " +
+                "CRITICAL: You MUST use the EXACT original sentences from the story for each scene's audioScript. " +
+                "DO NOT rewrite, DO NOT summarize, and DO NOT skip any part of the provided text. " +
+                "Every single word from the input MUST be preserved verbatim in the resulting storyboard. " +
+                "If there are numbers give the output in terms on fowrds spelling the number for good narration (e.g. 100 -> one hundred). "
+                +
+                "The narration (audioScript) for each scene must be short—around 2 sentences (approx. 15-20 seconds of speech). "
+                +
+                "For each scene, provide a highly detailed, distinct image generation prompt " +
+                "reflecting this visual style: " + finalStyle + ". " +
+                "Output ONLY a JSON array of objects. Each object MUST have exactly two keys: 'audioScript' and 'imagePrompt'. "
+                +
+                "Return ONLY raw JSON without markdown formatting.";
+
+        String userPrompt = "Story: " + redditStory;
 
         try {
-            long startMs = System.currentTimeMillis();
-
+            log.info("Requesting LLM with story ({} chars)...", redditStory.length());
             String rawResponse = chatClient.prompt()
-                    .user(prompt)
+                    .system(systemPrompt)
+                    .user(userPrompt)
                     .call()
                     .content();
 
-            long elapsedMs = System.currentTimeMillis() - startMs;
-            log.info("=== [AI RESPONSE] Received in {}ms ===", elapsedMs);
-            log.debug("Raw AI response:\n{}", rawResponse);
-
             if (rawResponse == null || rawResponse.isBlank()) {
-                log.error("AI returned a null/empty response.");
                 throw new IOException("Empty response from AI");
             }
 
-            // Strip markdown fences if the model wrapped JSON anyway
-            String sanitised = rawResponse
-                    .replaceAll("(?s)```json\\s*", "")
-                    .replaceAll("```", "")
-                    .trim();
+            String sanitised = rawResponse.replaceAll("(?s)```json\\s*", "").replaceAll("```", "").trim();
 
-            if (!sanitised.equals(rawResponse.trim())) {
-                log.warn("Markdown fences were stripped from AI response.");
-            }
-            log.debug("Sanitised JSON ({} chars):\n{}", sanitised.length(), sanitised);
-
-            Storyboard storyboard = objectMapper.readValue(sanitised, Storyboard.class);
-            log.info("=== [PARSE SUCCESS] Storyboard \"{}\" with {} scene(s) ===",
-                    storyboard.getTitle(),
-                    storyboard.getScenes() == null ? 0 : storyboard.getScenes().size());
+            Scene[] sceneDTOs = objectMapper.readValue(sanitised, Scene[].class);
 
             Project project = new Project();
-            project.setTitle(storyboard.getTitle());
             project.setOriginalStory(redditStory);
+            project.setVisualStyle(finalStyle);
+            project.setVoice(voice != null ? voice : "af_bella");
 
-            if (storyboard.getScenes() != null) {
-                for (com.katalist.katalistremake.model.Scene sceneDTO : storyboard.getScenes()) {
-                    project.addScene(sceneDTO);
-                }
-            }
+            String firstLine = redditStory.split("\n")[0];
+            project.setTitle(firstLine.substring(0, Math.min(firstLine.length(), 50)));
 
-            // Fallback for blank title
-            if (project.getTitle() == null || project.getTitle().isBlank()) {
-                String firstLine = redditStory.split("\n")[0];
-                project.setTitle(firstLine.substring(0, Math.min(firstLine.length(), 50)));
+            for (int i = 0; i < sceneDTOs.length; i++) {
+                Scene scene = sceneDTOs[i];
+                scene.setOrderIndex(i);
+                project.addScene(scene);
             }
 
             Project savedProject = projectRepository.save(project);
-            log.info("Saved newly generated Project to Database with ID {}", savedProject.getId());
-
+            log.info("Saved Project {} with {} scenes", savedProject.getId(), savedProject.getScenes().size());
             return savedProject;
 
         } catch (Exception e) {
-            log.error("=== [AI ERROR] Failed to generate storyboard: {} ===", e.getMessage());
-            log.error("Stack trace:", e);
+            log.error("AI Generation failed: {}", e.getMessage());
             throw new IOException("Failed to generate storyboard: " + e.getMessage(), e);
         }
     }

@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:14
+    container_name: katalist_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: katalist_db
+      POSTGRES_USER: ${POSTGRES_USER:-katalist_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-katalist_pass}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+
+volumes:
+  postgres_data:

@@ -29,9 +29,13 @@ public class Project {
     @Column(columnDefinition = "TEXT")
     private String originalStory;
 
+    private String visualStyle;
+    @Builder.Default
+    private String voice = "af_bella";
+
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    @OrderBy("sceneOrder ASC")
+    @OrderBy("orderIndex ASC")
     @Builder.Default
     private List<Scene> scenes = new ArrayList<>();
 

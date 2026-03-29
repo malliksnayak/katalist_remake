@@ -5,11 +5,13 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="remove-visual-description" author="antigravity">
+    <changeSet id="06-add-voice-to-projects" author="antigravity">
         <preConditions onFail="MARK_RAN">
-            <columnExists tableName="scenes" columnName="visual_description"/>
+            <not><columnExists tableName="projects" columnName="voice"/></not>
         </preConditions>
-        <dropColumn tableName="scenes" columnName="visual_description"/>
+        <addColumn tableName="projects">
+            <column name="voice" type="VARCHAR(255)" defaultValue="af_bella"/>
+        </addColumn>
     </changeSet>
 
 </databaseChangeLog>

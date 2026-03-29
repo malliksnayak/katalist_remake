@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface SceneRepository extends JpaRepository<Scene, String> {
-    List<Scene> findByProjectIdOrderBySceneOrderAsc(String projectId);
+    List<Scene> findByProjectIdOrderByOrderIndexAsc(String projectId);
 }
